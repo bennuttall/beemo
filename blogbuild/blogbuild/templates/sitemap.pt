@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+  <url>
+    <loc>https://www.bennuttall.com</loc>
+  </url>
+  <url>
+    <loc>https://www.bennuttall.com/blog</loc>
+  </url>
+  <url>
+    <loc>https://www.bennuttall.com/blog/archive</loc>
+  </url>
+  <url>
+    <loc>https://www.bennuttall.com/blog/tags</loc>
+  </url>
+  <url tal:repeat="page pages">
+    <loc>https://www.bennuttall.com/${page.link}</loc>
+  </url>
+  <url tal:repeat="post posts">
+    <loc>https://www.bennuttall.com/${post.link}</loc>
+    <lastmod>${post.modified}</lastmod>
+  </url>
+  <url tal:repeat="tag tags">
+    <loc>https://www.bennuttall.com/blog/tags/${tag}/</loc>
+  </url>
+  <url tal:repeat="year years">
+    <loc>https://www.bennuttall.com/blog/${year}/</loc>
+  </url>
+  <url tal:repeat="(year, month) months">
+    <loc>https://www.bennuttall.com/blog/${year}/${month}/</loc>
+  </url>
+</urlset>

@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<feed xmlns="http://www.w3.org/2005/Atom">
+  <title>${title}</title>
+  <link href="https://bennuttall.com/blog/" />
+  <link href="https://bennuttall.com/blog/atom.xml" rel="self" />
+  <id>https://bennuttall.com/blog/</id>
+  <author>
+    <name>Ben Nuttall</name>
+  </author>
+  <updated>${now.isoformat(timespec="seconds")}</updated>
+
+  <entry tal:repeat="post posts">
+    <title><![CDATA[${post.title}]]></title>
+    <link href="https://bennuttall.com/${post.link}/" />
+    <id>https://bennuttall.com/${post.link}</id>
+    <published>${post.published.isoformat(timespec="seconds")}</published>
+    <updated>${post.modified.isoformat(timespec="seconds")}</updated>
+    <category tal:repeat="tag post.tags" term="${tag}" />
+    <summary><![CDATA[${post.excerpt}]]></summary>
+    <content><![CDATA[${structure:post.html}]]></content>
+  </entry>
+</feed>

@@ -1,0 +1,30 @@
+<div metal:use-macro="layout">
+  <div metal:fill-slot="head" tal:omit-tag="1">
+    <meta name="description" content="Tags index for Ben Nuttall's blog posts" />
+    <meta property="og:url" content="https://bennuttall.com/blog/tags/" />
+    <meta property="og:title" content="${html_title}" />
+    <meta property="og:description" content="${description}" />
+    <meta name="twitter:title" content="${html_title}" />
+    <meta name="twitter:description" content="${description}" />
+  </div>
+
+  <div metal:fill-slot="title" tal:omit-tag="1">${html_title}</div>
+
+  <section metal:fill-slot="content">
+    <div>
+      <div class="row">
+        <div class="small-12 columns">
+          <h1>${title}</h1>
+        </div>
+      </div>
+      <div class="row">
+        <div class="small-12 medium-8 columns">
+          <ul>
+            <li tal:repeat="(tag, posts) tags.items()">
+              <a href="/blog/tags/${tag}/">${tag.replace("-", " ")}</a> (${len(posts)})
+            </li>
+          </ul>
+        </div>
+      </div>
+  </section>
+</div>
