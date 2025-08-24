@@ -18,7 +18,7 @@
         </div>
       </div>
       <div class="row">
-        <div class="small-12 medium-8 columns entry-content">
+        <div class="small-12 ${'' if page.full_width else 'medium-8'} columns entry-content">
           <div tal:content="structure page.html"></div>
         </div>
       </div>

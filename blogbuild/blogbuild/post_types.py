@@ -23,6 +23,7 @@ class PostType(BaseModel):
     description: str | None = None
     excerpt: str | None = None
     link: Path | None = None
+    full_width: bool = False
 
     @model_validator(mode="after")
     def set_html(self):

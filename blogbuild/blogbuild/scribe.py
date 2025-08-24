@@ -48,7 +48,7 @@ class TheScribe:
     def iter_pages(self) -> Generator[Page, None, None]:
         pages_dir = self.settings.content_dir / "pages"
         for page_dir in pages_dir.iterdir():
-            if page_dir.stem not in ("home", "talks"):
+            if page_dir.stem != "home":
                 page_data = self.parse_content(page_dir)
                 yield validate_page(page_data, src_dir=page_dir)
 
@@ -86,11 +86,6 @@ class TheScribe:
         page_data = self.parse_content(homepage_dir)
         return validate_page(page_data, src_dir=homepage_dir)
 
-    def get_talks_page(self) -> Page:
-        talks_page_dir = self.settings.content_dir / "pages" / "talks"
-        page_data = self.parse_content(talks_page_dir)
-        return validate_page(page_data, src_dir=talks_page_dir)
-
     def get_archive(self) -> dict[int, list[Post]]:
         archive = defaultdict(list)
 
@@ -110,19 +105,6 @@ class TheScribe:
             now=self.now,
         )
         output_path = self.output_path / "index.html"
-        output_path.parent.mkdir(parents=True, exist_ok=True)
-        output_path.write_text(html)
-
-    def write_talks_page(self):
-        link = Path("talks")
-        logger.info("Writing talks page")
-        page = self.get_talks_page()
-        html = self.templates["talks"](
-            layout=self.templates["layout"]["layout"],
-            page=page,
-            now=self.now,
-        )
-        output_path = self.output_path / link / "index.html"
         output_path.parent.mkdir(parents=True, exist_ok=True)
         output_path.write_text(html)
 
@@ -309,7 +291,6 @@ class TheScribe:
 
         self.setup_output_path()
         self.write_homepage()
-        self.write_talks_page()
         self.write_pages()
         self.write_posts()
         self.write_blog_index()
