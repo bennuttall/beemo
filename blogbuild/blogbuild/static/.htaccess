@@ -6,6 +6,7 @@ RewriteRule ^talks/(.+)$ /talks/ [L,R=301]
 RewriteRule ^files/([^/]+)?$ https://files.bennuttall.com/$1 [L,R=301]
 RewriteRule ^contact/?$ /about/ [L,R=301]
 RewriteRule ^feed/?$ /blog/atom.xml [L,R=301]
+RewriteRule ^blog/tags/gpio-zero/?$ /blog/tags/gpiozero/ [R=301,L]
 RewriteRule ^tag/([^/]+)/?$ /blog/tags/$1/ [R=301,L]
 RewriteRule ^([0-9]{4})/?$ /blog/$1 [R=301,L]
 
