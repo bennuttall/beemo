@@ -264,7 +264,7 @@ class TheScribe:
         years = {post.published.year for post in self.posts}
         months = {(post.published.year, post.published.strftime("%m")) for post in self.posts}
         html = self.templates["sitemap"](
-            pages=[page for page in self.pages if page.slug == "404"],
+            pages=[page for page in self.pages if page.slug != "404"],
             posts=self.posts,
             tags=list(self.tags),
             years=years,
