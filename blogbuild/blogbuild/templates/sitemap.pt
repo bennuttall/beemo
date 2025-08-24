@@ -17,7 +17,7 @@
   </url>
   <url tal:repeat="post posts">
     <loc>https://www.bennuttall.com/${post.link}</loc>
-    <lastmod>${post.modified}</lastmod>
+    <lastmod>${post.modified.isoformat(timespec="seconds")}</lastmod>
   </url>
   <url tal:repeat="tag tags">
     <loc>https://www.bennuttall.com/blog/tags/${tag}/</loc>
