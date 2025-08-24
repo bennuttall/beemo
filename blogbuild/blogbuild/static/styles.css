@@ -114,11 +114,22 @@ code {
   border: 0;
 }
 
-pre {
+pre, blockquote {
   background: #f0f8ff;
-  border: 2px solid #159ed5;
   margin: 1em 2em;
   padding: 1em;
+}
+
+pre {
+  border: 2px solid #159ed5;
+}
+
+blockquote p {
+  font-style: italic;
+}
+
+blockquote p:last-of-type {
+  margin-bottom: 0;
 }
 
 pre > code {
