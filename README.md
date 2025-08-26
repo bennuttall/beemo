@@ -2,6 +2,10 @@
 
 A Python-based static site generator to build my website [bennuttall.com](https://bennuttall.com)
 
+## PyPI
+
+- [beemo](https://pypi.org/project/beemo/)
+
 ## Content
 
 Content and templates for my site are at
@@ -72,4 +76,4 @@ Build the site by running the command `beemo` in the virtualenv. It will build y
 
 ## Licence
 
-[BSD-3-Clause](LICENSE.txt)
+- [BSD-3-Clause](LICENSE.txt)

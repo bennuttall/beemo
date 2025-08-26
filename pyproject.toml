@@ -15,11 +15,16 @@ dependencies = [
     "pydantic-settings (>=2.10.1,<3.0.0)",
     "beautifulsoup4 (>=4.13.4,<5.0.0)",
 ]
-license = { file = "LICENSE.txt" }
+license = "BSD-3-Clause"
+license-files = ["LICENSE.txt"]
+classifiers = [
+    "Development Status :: 4 - Beta",
+]
+readme = "README.md"
 
 [project.urls]
-repository = "https://github.com/bennuttall/beemo"
-"Bug Tracker" = "https://github.com/bennuttall/beemo/issues"
+Source = "https://github.com/bennuttall/beemo"
+Issues = "https://github.com/bennuttall/beemo/issues"
 
 [tool.poetry.group.dev.dependencies]
 black = "^25.1.0"
