@@ -1,6 +1,6 @@
 develop:
 	pip install "poetry>2"
-	$(MAKE) -C beemo develop
+	poetry install --all-extras --with dev
 
 serve:
 	python -m http.server -d www &
