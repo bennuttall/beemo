@@ -1,5 +1,5 @@
 [project]
-name = "blogbuild"
+name = "beemo"
 version = "0.1.0"
 description = ""
 authors = [
@@ -22,7 +22,7 @@ black = "^25.1.0"
 isort = "^6.0.1"
 
 [project.scripts]
-blog = "blogbuild.scribe:main"
+beemo = "beemo.scribe:main"
 
 [tool.black]
 line-length = 100

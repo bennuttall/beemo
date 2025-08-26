@@ -1,10 +1,11 @@
-# blog
+# beemo
 
-A Python-based static generator to build my website [bennuttall.com](https://bennuttall.com)
+A Python-based static site generator to build my website [bennuttall.com](https://bennuttall.com)
 
 ## Content
 
-Content and templates for my site are at [github.com/bennuttall/web-content]. If you wish to use
+Content and templates for my site are at
+[github.com/bennuttall/web-content](https://github.com/bennuttall/web-content). If you wish to use
 this project for your own website, this repo will be a useful reference.
 
 ## Features
@@ -52,11 +53,11 @@ Set environment variables for each of your content directories, and your output 
 The output directory must exist. Note it will be deleted and re-created with your new site build.
 
 ```
-export BLOG_POSTS_DIR=/home/ben/Projects/bennuttall/web-content/content/posts
-export BLOG_PAGES_DIR=/home/ben/Projects/bennuttall/web-content/content/pages
-export BLOG_STATIC_DIR=/home/ben/Projects/bennuttall/web-content/static
-export BLOG_TEMPLATES_DIR=/home/ben/Projects/bennuttall/web-content/templates
-export BLOG_OUTPUT_DIR=/home/ben/Projects/bennuttall/blog/www
+export BEEMO_POSTS_DIR=/home/ben/Projects/bennuttall/web-content/content/posts
+export BEEMO_PAGES_DIR=/home/ben/Projects/bennuttall/web-content/content/pages
+export BEEMO_STATIC_DIR=/home/ben/Projects/bennuttall/web-content/static
+export BEEMO_TEMPLATES_DIR=/home/ben/Projects/bennuttall/web-content/templates
+export BEEMO_OUTPUT_DIR=/home/ben/Projects/bennuttall/beemo/www
 ```
 
 ### Install
@@ -65,9 +66,9 @@ Create a virtual environment and run `make develop` to install the library and i
 
 ### Build
 
-Build the site by running the command `blog` in the virtualenv. It will build your site into
-`BLOG_OUTPUT_DIR`. This can be served locally with `make serve` and will be running at
-`http://localhost:8000/`.
+Build the site by running the command `beemo` in the virtualenv. It will build your site into
+`BEEMO_OUTPUT_DIR`. This can be served locally with `make serve` and will be running at
+`http://localhost:8000/`, assuming your build directory is `www` in this directory.
 
 ## Licence
 
