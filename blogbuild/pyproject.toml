@@ -23,6 +23,14 @@ isort = "^6.0.1"
 [project.scripts]
 blog = "blogbuild.scribe:main"
 
+[tool.black]
+line-length = 100
+target-version = ['py311']
+
+[tool.isort]
+profile = "black"
+lines_after_imports = 2
+
 [build-system]
 requires = ["poetry-core>=2.0.0,<3.0.0"]
 build-backend = "poetry.core.masonry.api"
