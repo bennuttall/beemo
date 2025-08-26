@@ -85,9 +85,11 @@ class Post(PostType):
 
     @model_validator(mode="after")
     def set_link(self):
-        self.link = (
-            Path("blog") / str(self.published.year) / self.published.strftime("%m") / self.slug
-        )
+        post_path = Path(str(self.published.year)) / self.published.strftime("%m") / self.slug
+        if settings.pages_dir is None:
+            self.link = post_path
+        else:
+            self.link = Path("blog") / post_path
         return self
 
     @model_validator(mode="after")
