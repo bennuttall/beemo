@@ -1,4 +1,5 @@
 *.pyc
 www
+dist
 .env
 poetry.lock
