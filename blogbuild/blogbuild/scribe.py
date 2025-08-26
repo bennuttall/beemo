@@ -2,7 +2,6 @@ import shutil
 import sys
 from collections import defaultdict
 from datetime import datetime, timezone
-from importlib.resources import as_file, files
 from pathlib import Path
 from typing import Generator
 
@@ -24,7 +23,7 @@ class TheScribe:
         self.settings = get_settings()
         self.output_path = self.settings.output_dir
         self.templates = PageTemplateLoader(
-            search_path=[files(__package__).joinpath("templates")],
+            search_path=[self.settings.templates_dir],
             default_extension=".pt",
         )
         self.pages = list(self.iter_pages())
@@ -35,26 +34,22 @@ class TheScribe:
         logger.info("Setting up output path", output_path=str(self.output_path))
         shutil.rmtree(self.output_path, ignore_errors=True)
         self.output_path.mkdir()
-        static_dir = files(__package__).joinpath("static")
-        for entry in static_dir.iterdir():
-            if entry.is_file():
-                with as_file(entry) as source_path:
-                    with open(source_path, "rb") as source:
-                        f = self.output_path / entry.name
-                        with open(f, "wb") as dest:
-                            logger.info("Copying static file", src=str(source_path), dest=str(f))
-                            shutil.copyfileobj(source, dest)
+        for source_path in self.settings.static_dir.iterdir():
+            if source_path.is_file():
+                with open(source_path, "rb") as source:
+                    f = self.output_path / source_path.name
+                    with open(f, "wb") as dest:
+                        logger.info("Copying static file", src=str(source_path), dest=str(f))
+                        shutil.copyfileobj(source, dest)
 
     def iter_pages(self) -> Generator[Page, None, None]:
-        pages_dir = self.settings.content_dir / "pages"
-        for page_dir in pages_dir.iterdir():
+        for page_dir in self.settings.pages_dir.iterdir():
             if page_dir.stem != "home":
                 page_data = self.parse_content(page_dir)
                 yield validate_page(page_data, src_dir=page_dir)
 
     def iter_posts(self) -> Generator[Post, None, None]:
-        posts_dir = self.settings.content_dir / "posts"
-        for year_dir in posts_dir.iterdir():
+        for year_dir in self.settings.posts_dir.iterdir():
             for post_dir in year_dir.iterdir():
                 post_data = self.parse_content(post_dir)
                 yield validate_post(post_data, src_dir=post_dir)
@@ -82,7 +77,7 @@ class TheScribe:
         return sorted_tags
 
     def get_homepage(self) -> Page:
-        homepage_dir = self.settings.content_dir / "pages" / "home"
+        homepage_dir = self.settings.pages_dir / "home"
         page_data = self.parse_content(homepage_dir)
         return validate_page(page_data, src_dir=homepage_dir)
 
