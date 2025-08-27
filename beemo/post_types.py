@@ -3,7 +3,7 @@ from datetime import datetime, timezone
 from pathlib import Path
 
 from markdown import markdown
-from pydantic import BaseModel, model_validator
+from pydantic import BaseModel, ConfigDict, model_validator
 
 from .settings import get_settings
 from .utils import get_excerpt, get_text
@@ -13,6 +13,8 @@ settings = get_settings()
 
 
 class PostType(BaseModel):
+    model_config = ConfigDict(extra="allow")
+
     post_type: str
     slug: str | None = None
     title: str
