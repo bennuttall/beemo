@@ -5,11 +5,11 @@ from pathlib import Path
 from markdown import markdown
 from pydantic import BaseModel, ConfigDict, model_validator
 
-from .settings import get_settings
+from .settings import get_config
 from .utils import get_excerpt, get_text
 
 
-settings = get_settings()
+settings = get_config()
 
 
 class PostType(BaseModel):
@@ -18,11 +18,10 @@ class PostType(BaseModel):
     post_type: str
     slug: str | None = None
     title: str
-    html_title: str | None = None
+    description: str | None = None
     content: str
     text: str | None = None
     html: str | None = None
-    description: str | None = None
     excerpt: str | None = None
     link: Path | None = None
     full_width: bool = False
@@ -41,6 +40,7 @@ class PostType(BaseModel):
     def set_excerpt(self):
         if not self.excerpt:
             self.excerpt = get_excerpt(self.text)
+        self.excerpt = self.excerpt.replace("\n", " ").strip()
         return self
 
     @model_validator(mode="after")
@@ -78,11 +78,6 @@ class Post(PostType):
     @model_validator(mode="after")
     def set_timezone(self):
         self.published = self.published.replace(tzinfo=timezone.utc)
-        return self
-
-    @model_validator(mode="after")
-    def set_html_title(self):
-        self.html_title = f"Ben Nuttall - {self.title}"
         return self
 
     @model_validator(mode="after")
