@@ -10,7 +10,7 @@ from chameleon import PageTemplateLoader
 from structlog import get_logger
 
 from .post_types import Page, Post
-from .settings import get_settings
+from .settings import get_config
 from .utils import prev_current_next
 
 
@@ -20,10 +20,10 @@ logger = get_logger()
 class TheScribe:
     def __init__(self):
         self.now = datetime.now(timezone.utc)
-        self.settings = get_settings()
-        self.output_path = self.settings.output_dir
+        self.config = get_config()
+        self.output_path = self.config.output_dir
         self.templates = PageTemplateLoader(
-            search_path=[self.settings.templates_dir],
+            search_path=[self.config.templates_dir],
             default_extension=".pt",
         )
         self.pages = list(self.iter_pages())
@@ -34,7 +34,7 @@ class TheScribe:
         logger.info("Setting up output path", output_path=str(self.output_path))
         shutil.rmtree(self.output_path, ignore_errors=True)
         self.output_path.mkdir()
-        for source_path in self.settings.static_dir.iterdir():
+        for source_path in self.config.static_dir.iterdir():
             if source_path.is_file():
                 with open(source_path, "rb") as source:
                     f = self.output_path / source_path.name
@@ -43,13 +43,17 @@ class TheScribe:
                         shutil.copyfileobj(source, dest)
 
     def iter_pages(self) -> Generator[Page, None, None]:
-        for page_dir in self.settings.pages_dir.iterdir():
+        if not self.config.pages_dir:
+            return
+        for page_dir in self.config.pages_dir.iterdir():
             if page_dir.stem != "home":
                 page_data = self.parse_content(page_dir)
                 yield validate_page(page_data, src_dir=page_dir)
 
     def iter_posts(self) -> Generator[Post, None, None]:
-        for year_dir in self.settings.posts_dir.iterdir():
+        if not self.config.posts_dir:
+            return
+        for year_dir in self.config.posts_dir.iterdir():
             for post_dir in year_dir.iterdir():
                 post_data = self.parse_content(post_dir)
                 yield validate_post(post_data, src_dir=post_dir)
@@ -73,11 +77,10 @@ class TheScribe:
         for post in reversed(self.posts):
             for tag in post.tags:
                 tags[tag].append(post)
-        sorted_tags = dict(sorted(tags.items(), key=lambda item: len(item[1]), reverse=True))
-        return sorted_tags
+        return dict(sorted(tags.items(), key=lambda item: len(item[1]), reverse=True))
 
     def get_homepage(self) -> Page:
-        homepage_dir = self.settings.pages_dir / "home"
+        homepage_dir = self.config.pages_dir / "home"
         page_data = self.parse_content(homepage_dir)
         return validate_page(page_data, src_dir=homepage_dir)
 
@@ -139,13 +142,11 @@ class TheScribe:
                     logger.info("Copied image", path=str(img_dest))
 
     def write_blog_index(self):
-        link = Path("blog")
+        link = self.config.blog_root
         logger.info("Writing blog index", link=str(link))
         html = self.templates["posts"](
             layout=self.templates["layout"]["layout"],
             title="Blog",
-            html_title="Ben Nuttall - Blog",
-            description="Ben Nuttall's blog",
             link=link,
             posts=reversed(self.posts),
             now=self.now,
@@ -161,13 +162,11 @@ class TheScribe:
             year = post.published.strftime("%Y")
             years[year].append(post)
         for year, posts in years.items():
-            link = Path("blog") / year
+            link = self.config.blog_root / year
             logger.info("Writing year index", year=year, post_count=len(posts), link=str(link))
             html = self.templates["posts"](
                 layout=self.templates["layout"]["layout"],
                 title=f"Archive: {year}",
-                html_title=f"Ben Nuttall - Blog archive: {year}",
-                description=f"Ben Nuttall's blog posts archive for {year}",
                 link=link,
                 posts=reversed(posts),
                 now=self.now,
@@ -185,15 +184,13 @@ class TheScribe:
             month_name = post.published.strftime("%B")
             months[(year, month, month_name)].append(post)
         for (year, month, month_name), posts in months.items():
-            link = Path("blog") / year / month
+            link = self.config.blog_root / year / month
             logger.info(
                 "Writing month index", year=year, month=month, post_count=len(posts), link=str(link)
             )
             html = self.templates["posts"](
                 layout=self.templates["layout"]["layout"],
                 title=f"Archive: {month_name} {year}",
-                html_title=f"Ben Nuttall - Blog archive: {month_name} {year}",
-                description=f"Ben Nuttall's blog posts archive for {month_name} {year}",
                 link=link,
                 posts=reversed(posts),
                 now=self.now,
@@ -203,13 +200,11 @@ class TheScribe:
             output_path.write_text(html)
 
     def write_tags_index(self):
-        link = Path("blog") / "tags"
+        link = self.config.blog_root / "tags"
         logger.info("Writing tags index", len=len(self.tags), link=str(link))
         html = self.templates["tags"](
             layout=self.templates["layout"]["layout"],
             title="Tags",
-            html_title="Ben Nuttall - Blog post tags",
-            description="Tags index for Ben Nuttall's blog posts",
             link=link,
             tags=self.tags,
             now=self.now,
@@ -221,14 +216,12 @@ class TheScribe:
     def write_tag_pages(self):
         logger.info("Writing tag pages", len=len(self.tags))
         for tag, posts in self.tags.items():
-            link = Path("blog") / "tags" / tag
+            link = self.config.blog_root / "tags" / tag
             logger.info("Writing tag page", tag=tag, post_count=len(posts), link=str(link))
             tag_str = tag.replace("-", " ")
             html = self.templates["posts"](
                 layout=self.templates["layout"]["layout"],
                 title=f"Tag: {tag_str}",
-                html_title=f"Ben Nuttall - Blog post tag: {tag_str}",
-                description=f"Ben Nuttall's blog posts tagged with {tag_str}",
                 link=link,
                 posts=posts,
                 now=self.now,
@@ -238,14 +231,12 @@ class TheScribe:
             output_path.write_text(html)
 
     def write_archive_page(self):
-        link = Path("blog") / "archive"
+        link = self.config.blog_root / "archive"
         logger.info("Writing archive page")
         archive = self.get_archive()
         html = self.templates["archive"](
             layout=self.templates["layout"]["layout"],
             title="Blog archive",
-            html_title="Ben Nuttall - Blog archive",
-            description="Archive of Ben Nuttall's blog posts",
             link=link,
             archive=archive,
             now=self.now,
@@ -273,11 +264,11 @@ class TheScribe:
     def write_atom_feed(self):
         logger.info("Writing Atom feed")
         html = self.templates["atom"](
-            title="Ben Nuttall's blog",
+            title="Blog",
             posts=reversed(self.posts[-10:]),
             now=self.now,
         )
-        output_path = self.output_path / "blog" / "atom.xml"
+        output_path = self.output_path / self.config.blog_root / "atom.xml"
         output_path.parent.mkdir(parents=True, exist_ok=True)
         output_path.write_text(html)
 
@@ -285,17 +276,19 @@ class TheScribe:
         logger.info("Starting build process", output_dir=str(self.output_path))
 
         self.setup_output_path()
-        self.write_homepage()
-        self.write_pages()
-        self.write_posts()
-        self.write_blog_index()
-        self.write_year_indexes()
-        self.write_month_indexes()
-        self.write_tags_index()
-        self.write_tag_pages()
-        self.write_archive_page()
+        if self.config.pages_dir is not None:
+            self.write_homepage()
+            self.write_pages()
+        if self.config.posts_dir is not None:
+            self.write_posts()
+            self.write_blog_index()
+            self.write_year_indexes()
+            self.write_month_indexes()
+            self.write_tags_index()
+            self.write_tag_pages()
+            self.write_archive_page()
+            self.write_atom_feed()
         self.write_sitemap()
-        self.write_atom_feed()
 
 
 def validate_post(post_data: dict[str], src_dir: Path) -> Post:

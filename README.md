@@ -50,19 +50,53 @@ and such in this directory.
 Create Chameleon templates for your site in the `templates` directory. See the [Chameleon
 docs](https://chameleon.readthedocs.io/en/latest/) for reference.
 
+## Configuration
+
+The Beemo config file is a YAML file specifying some basic config about your site build.
+
+For example, here `pages_dir` and `posts_dir` are both specified, and the site will be built with
+both pages and blog posts:
+
+```yml
+posts_dir: content/posts
+pages_dir: content/pages
+static_dir: static
+templates_dir: templates
+blog_root: blog
+output_dir: www
+```
+
+If `pages_dir` is not specified, the site will be built without pages (i.e. blog only mode), e.g:
+
+```yml
+posts_dir: posts
+static_dir: static
+templates_dir: templates
+output_dir: www
+```
+
+If `posts_dir` is not specified, the site will be built without pages (i.e. pages only mode), e.g:
+
+```yml
+pages_dir: pages
+static_dir: static
+templates_dir: templates
+output_dir: www
+```
+
+If `posts_dir` is specified, this comes with archives, tag indexes and such which cannot currently
+be disabled.
+
 ### Environment variables
 
-Set environment variables for each of your content directories, and your output directory.
-
-The output directory must exist. Note it will be deleted and re-created with your new site build.
+The only environment variable required is `BEEMO_CONFIG` which must point to your site's config
+file:
 
 ```
-export BEEMO_POSTS_DIR=/home/ben/Projects/bennuttall/web-content/content/posts
-export BEEMO_PAGES_DIR=/home/ben/Projects/bennuttall/web-content/content/pages
-export BEEMO_STATIC_DIR=/home/ben/Projects/bennuttall/web-content/static
-export BEEMO_TEMPLATES_DIR=/home/ben/Projects/bennuttall/web-content/templates
-export BEEMO_OUTPUT_DIR=/home/ben/Projects/bennuttall/beemo/www
+export BEEMO_CONFIG=config.yml
 ```
+
+
 
 ### Install
 
@@ -71,8 +105,8 @@ Create a virtual environment and run `make develop` to install the library and i
 ### Build
 
 Build the site by running the command `beemo` in the virtualenv. It will build your site into
-`BEEMO_OUTPUT_DIR`. This can be served locally with `make serve` and will be running at
-`http://localhost:8000/`, assuming your build directory is `www` in this directory.
+your configured `output_dir`. This can be served locally with e.g. `python -m http.server -d www`
+and viewed at e.g. `http://localhost:8000`.
 
 ## Licence
 
