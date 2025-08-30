@@ -96,17 +96,30 @@ file:
 export BEEMO_CONFIG=config.yml
 ```
 
+## Install
 
+Install the latest release with:
 
-### Install
+```
+pip install beemo
+```
+
+### Development
 
 Create a virtual environment and run `make develop` to install the library and its dependencies.
 
+This can be served locally with e.g. `python -m http.server -d www` and viewed at e.g.
+`http://localhost:8000`.
+
 ### Build
 
-Build the site by running the command `beemo` in the virtualenv. It will build your site into
-your configured `output_dir`. This can be served locally with e.g. `python -m http.server -d www`
-and viewed at e.g. `http://localhost:8000`.
+Build your site by running the command `beemo` with the environment variable `BEEMO_CONFIG` set
+pointing at a valid config file. It will build your site into your configured `output_dir`.
+
+## Examples
+
+- [bennuttall.com](https://bennuttall.com) ([repo](https://github.com/bennuttall/web-content))
+- [blog.piwheels.org](https://blog.piwheels.org) ([repo](https://github.com/piwheels/blog))
 
 ## Licence
 
