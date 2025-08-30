@@ -1,3 +1,4 @@
+import json
 import shutil
 import sys
 from collections import defaultdict
@@ -272,6 +273,21 @@ class TheScribe:
         output_path.parent.mkdir(parents=True, exist_ok=True)
         output_path.write_text(html)
 
+    def write_json(self):
+        logger.info("Writing json")
+        data = {
+            "posts": [
+                {
+                    "title": post.title,
+                    "link": str(post.link),
+                    "published": post.published.isoformat(),
+                }
+                for post in reversed(self.posts)
+            ],
+        }
+        output_path = self.output_path / "posts.json"
+        output_path.write_text(json.dumps(data, indent=4))
+
     def build_site(self):
         logger.info("Starting build process", output_dir=str(self.output_path))
 
@@ -288,6 +304,7 @@ class TheScribe:
             self.write_tag_pages()
             self.write_archive_page()
             self.write_atom_feed()
+            self.write_json()
         self.write_sitemap()
 
 
