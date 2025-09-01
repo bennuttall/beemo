@@ -1,16 +1,11 @@
 # beemo
 
-A Python-based static site generator to build my website [bennuttall.com](https://bennuttall.com)
+A Python-based static site generator. Bring your own content and templates and it'll quickly
+generate you a deployable HTML website/blog.
 
 ## PyPI
 
 - [beemo](https://pypi.org/project/beemo/)
-
-## Content
-
-Content and templates for my site are at
-[github.com/bennuttall/web-content](https://github.com/bennuttall/web-content). If you wish to use
-this project for your own website, this repo will be a useful reference.
 
 ## Features
 
@@ -118,8 +113,12 @@ pointing at a valid config file. It will build your site into your configured `o
 
 ## Examples
 
+Sites built with Beemo:
+
 - [bennuttall.com](https://bennuttall.com) ([repo](https://github.com/bennuttall/web-content))
 - [blog.piwheels.org](https://blog.piwheels.org) ([repo](https://github.com/piwheels/blog))
+
+If you wish to use this project for your own website, these examples will be a useful reference.
 
 ## Licence
 
