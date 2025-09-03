@@ -9,7 +9,7 @@ generate you a deployable HTML website/blog.
 
 ## Features
 
-- Content as markdown and/or HTML
+- Content as HTML, markdown or reStructuredText
 - Pages
 - Posts
 - Tags
@@ -33,7 +33,11 @@ be organised in any hierarchy e.g. by year, year/month or just flat. Post direct
 
 Populate your `pages` directory with your pages. Each page must be in its own directory but can
 be organised in any hierarchy e.g. by year, year/month or just flat. Post directories must contain a
-`meta.yml` and an `index.md`.
+`meta.yml` and one of:
+
+- `index.html`
+- `index.md`
+- `index.rst`
 
 ### Static
 

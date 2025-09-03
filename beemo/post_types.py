@@ -2,7 +2,6 @@ import re
 from datetime import datetime, timezone
 from pathlib import Path
 
-from markdown import markdown
 from pydantic import BaseModel, ConfigDict, model_validator
 
 from .settings import get_config
@@ -19,17 +18,11 @@ class PostType(BaseModel):
     slug: str | None = None
     title: str
     description: str | None = None
-    content: str
     text: str | None = None
-    html: str | None = None
+    html: str
     excerpt: str | None = None
     link: Path | None = None
     full_width: bool = False
-
-    @model_validator(mode="after")
-    def set_html(self):
-        self.html = markdown(self.content, extensions=["fenced_code", "codehilite", "tables"])
-        return self
 
     @model_validator(mode="after")
     def set_text(self):

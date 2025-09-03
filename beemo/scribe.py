@@ -12,7 +12,7 @@ from structlog import get_logger
 
 from .post_types import Page, Post
 from .settings import get_config
-from .utils import prev_current_next
+from .utils import markdown_to_html, prev_current_next, rst_to_html
 
 
 logger = get_logger()
@@ -61,17 +61,29 @@ class TheScribe:
 
     def parse_content(self, src_dir: Path) -> dict[str]:
         metadata_file = src_dir / "meta.yml"
-        content_file = src_dir / "index.md"
         images_dir = src_dir / "images"
+        html_file = src_dir / "index.html"
+        md_file = src_dir / "index.md"
+        rst_file = src_dir / "index.rst"
+
+        if html_file.exists():
+            html = html_file.read_text(encoding="utf-8")
+        elif md_file.exists():
+            html = markdown_to_html(md_file.read_text(encoding="utf-8"))
+        elif rst_file.exists():
+            html = rst_to_html(rst_file.read_text(encoding="utf-8"))
+        else:
+            logger.warning("No content file found", src_dir=str(src_dir))
+            raise FileNotFoundError("No content file found")
 
         metadata = yaml.safe_load(metadata_file.read_text(encoding="utf-8"))
-        content = content_file.read_text(encoding="utf-8")
+
         if images_dir.exists() and images_dir.is_dir():
             images = [img for img in images_dir.iterdir() if img.is_file()]
         else:
             images = []
 
-        return {"content": content, "images": images, **metadata}
+        return {"html": html, "images": images, **metadata}
 
     def get_tags(self) -> dict[str, list[Post]]:
         tags = defaultdict(list)

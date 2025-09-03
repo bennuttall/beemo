@@ -1,6 +1,8 @@
 from itertools import chain, islice, tee
 
 from bs4 import BeautifulSoup
+from docutils.core import publish_string
+from markdown import markdown
 
 
 def truncate_words(s: str, limit: int) -> str:
@@ -30,3 +32,11 @@ def prev_current_next(iterable):
     items = b
     nexts = chain(islice(c, 1, None), [None])
     return zip(prevs, items, nexts)
+
+
+def markdown_to_html(content: str) -> str:
+    return markdown(content, extensions=["fenced_code", "codehilite", "tables"])
+
+
+def rst_to_html(content: str) -> str:
+    return publish_string(content, writer_name="html").decode("utf-8")
