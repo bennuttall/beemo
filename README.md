@@ -27,17 +27,13 @@ Create content directories e.g. `posts`, `pages`, `static` and `templates`.
 
 Populate your `posts` directory with your blog posts. Each post must be in its own directory but can
 be organised in any hierarchy e.g. by year, year/month or just flat. Post directories must contain a
-`meta.yml` and an `index.md` and can contain images in an `images` directory, used within your post.
+`meta.yml` and a content file (`index.html`, `index.md` or `index.rst`), and can contain images in
+an `images` directory, used within your post.
 
 ### Pages
 
-Populate your `pages` directory with your pages. Each page must be in its own directory but can
-be organised in any hierarchy e.g. by year, year/month or just flat. Post directories must contain a
-`meta.yml` and one of:
-
-- `index.html`
-- `index.md`
-- `index.rst`
+Populate your `pages` directory with your pages. Each page must be in its own directory. Post
+directories must contain a `meta.yml` and a content file (`index.html`, `index.md` or `index.rst`).
 
 ### Static
 

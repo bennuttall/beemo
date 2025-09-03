@@ -54,10 +54,10 @@ class TheScribe:
     def iter_posts(self) -> Generator[Post, None, None]:
         if not self.config.posts_dir:
             return
-        for year_dir in self.config.posts_dir.iterdir():
-            for post_dir in year_dir.iterdir():
-                post_data = self.parse_content(post_dir)
-                yield validate_post(post_data, src_dir=post_dir)
+        for meta_file in self.config.posts_dir.rglob("meta.yml"):
+            post_dir = meta_file.parent
+            post_data = self.parse_content(post_dir)
+            yield validate_post(post_data, src_dir=post_dir)
 
     def parse_content(self, src_dir: Path) -> dict[str]:
         metadata_file = src_dir / "meta.yml"
