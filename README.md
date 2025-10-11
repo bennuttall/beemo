@@ -3,7 +3,7 @@
 A Python-based static site generator. Bring your own content and templates and it'll quickly
 generate you a deployable HTML website/blog.
 
-![](beemo.png)
+![](https://raw.githubusercontent.com/bennuttall/beemo/refs/heads/main/beemo.png)
 
 ## PyPI
 
