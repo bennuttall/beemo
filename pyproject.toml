@@ -1,6 +1,6 @@
 [project]
 name = "beemo"
-version = "0.2.0"
+version = "0.3.0"
 description = "A Python-based static site generator. Bring your own content and templates and it'll quickly generate you a deployable HTML website/blog."
 authors = [
     {name = "Ben Nuttall", email = "ben@bennuttall.com"}
