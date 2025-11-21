@@ -34,14 +34,20 @@ class TheScribe:
     def setup_output_path(self):
         logger.info("Setting up output path", output_path=str(self.output_path))
         shutil.rmtree(self.output_path, ignore_errors=True)
-        self.output_path.mkdir()
-        for source_path in self.config.static_dir.iterdir():
+        self.output_path.mkdir(parents=True, exist_ok=True)
+
+        for source_path in self.config.static_dir.rglob("*"):
             if source_path.is_file():
-                with open(source_path, "rb") as source:
-                    f = self.output_path / source_path.name
-                    with open(f, "wb") as dest:
-                        logger.info("Copying static file", src=str(source_path), dest=str(f))
-                        shutil.copyfileobj(source, dest)
+                relative_path = source_path.relative_to(self.config.static_dir)
+                destination_path = self.output_path / relative_path
+                destination_path.parent.mkdir(parents=True, exist_ok=True)
+
+                logger.info(
+                    "Copying static file",
+                    src=str(source_path),
+                    dest=str(destination_path),
+                )
+                shutil.copy2(source_path, destination_path)
 
     def iter_pages(self) -> Generator[Page, None, None]:
         if not self.config.pages_dir:
