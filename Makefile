@@ -9,5 +9,5 @@ build:
 	rm -rf dist
 	poetry build
 
-release:
+release: build
 	twine upload dist/*
