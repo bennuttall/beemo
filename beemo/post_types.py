@@ -21,6 +21,7 @@ class PostType(BaseModel):
     text: str | None = None
     html: str
     excerpt: str | None = None
+    images: list[Path] = []
     link: Path | None = None
     full_width: bool = False
 
@@ -66,7 +67,6 @@ class Post(PostType):
     modified: datetime | None = None
     modified_diff: bool = False
     tags: list[str] = []
-    images: list[Path] = []
 
     @model_validator(mode="after")
     def set_timezone(self):

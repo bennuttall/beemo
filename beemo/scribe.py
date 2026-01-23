@@ -137,6 +137,13 @@ class TheScribe:
             )
             html_path = page.output_path / "index.html"
             html_path.write_text(html)
+            if page.images:
+                img_dir = page.output_path / "images"
+                img_dir.mkdir(parents=True, exist_ok=True)
+                for img in page.images:
+                    img_dest = img_dir / img.name
+                    shutil.copy(img, img_dest)
+                    logger.info("Copied image", path=str(img_dest))
 
     def write_posts(self):
         logger.info("Writing posts", len=len(self.posts))
