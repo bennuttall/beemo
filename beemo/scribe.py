@@ -313,6 +313,66 @@ class TheScribe:
         output_path = self.output_path / "posts.json"
         output_path.write_text(json.dumps(data, indent=4))
 
+    def write_manifest(self):
+        logger.info("Writing manifest")
+        entries = []
+
+        def url(link: Path) -> str:
+            s = str(link)
+            return "/" if s == "." else f"/{s}/"
+
+        if self.config.pages_dir is not None:
+            homepage = self.get_homepage()
+            entries.append({"url": "/", "title": homepage.title, "type": "page"})
+            for page in self.pages:
+                entries.append({"url": url(page.link), "title": page.title, "type": "page"})
+
+        if self.config.posts_dir is not None:
+            for post in reversed(self.posts):
+                entries.append(
+                    {
+                        "url": url(post.link),
+                        "title": post.title,
+                        "type": "post",
+                        "published": post.published.date().isoformat(),
+                        "tags": post.tags,
+                    }
+                )
+
+            blog = self.config.blog_root
+            entries.append({"url": url(blog), "title": "Blog", "type": "index"})
+            entries.append(
+                {"url": url(blog / "archive"), "title": "Blog archive", "type": "archive"}
+            )
+            entries.append({"url": url(blog / "tags"), "title": "Tags", "type": "index"})
+
+            for tag in self.tags:
+                tag_str = tag.replace("-", " ")
+                entries.append({"url": url(blog / "tags" / tag), "title": tag_str, "type": "tag"})
+
+            years = defaultdict(list)
+            months = defaultdict(list)
+            for post in self.posts:
+                y = post.published.strftime("%Y")
+                m = post.published.strftime("%m")
+                years[y].append(post)
+                months[(y, m)].append(post)
+
+            for y in years:
+                entries.append({"url": url(blog / y), "title": f"Archive: {y}", "type": "archive"})
+            for y, m in months:
+                month_name = datetime.strptime(m, "%m").strftime("%B")
+                entries.append(
+                    {
+                        "url": url(blog / y / m),
+                        "title": f"Archive: {month_name} {y}",
+                        "type": "archive",
+                    }
+                )
+
+        output_path = self.output_path / "manifest.json"
+        output_path.write_text(json.dumps(entries, indent=4))
+
     def build_site(self):
         logger.info("Starting build process", output_dir=str(self.output_path))
 
@@ -331,6 +391,7 @@ class TheScribe:
             self.write_atom_feed()
             self.write_json()
         self.write_sitemap()
+        self.write_manifest()
 
 
 def validate_post(post_data: dict[str], src_dir: Path) -> Post:
