@@ -15,6 +15,13 @@ def _get_config():
         return None
 
 
+def _require(value, name: str):
+    if value is None:
+        typer.echo(f"Error: {name} must be set in config or provided as an option", err=True)
+        raise typer.Exit(1)
+    return value
+
+
 @app.command("build")
 def do_build():
     """Build the site."""
@@ -34,8 +41,8 @@ def do_logs(
     config = _get_config()
     logs = config.logs if config else None
 
-    input = input or (logs.logs_dir if logs else Path("apache2"))
-    csv_dir = csv_dir or (logs.csv_dir if logs else Path("csv"))
+    input = _require(input or (logs.logs_dir if logs else None), "logs.logs_dir")
+    csv_dir = _require(csv_dir or (logs.csv_dir if logs else None), "logs.csv_dir")
     pattern = pattern or (logs.pattern if logs else "*.gz")
 
     run(input, csv_dir, pattern)
@@ -57,10 +64,10 @@ def do_report(
     report_config = config.report if config else None
     build_config = config.build if config else None
 
-    csv_dir = csv_dir or (report_config.csv_dir if report_config else Path("csv"))
-    templates_dir = templates_dir or (build_config.templates_dir if build_config else Path("templates"))
+    csv_dir = _require(csv_dir or (report_config.csv_dir if report_config else None), "report.csv_dir")
+    templates_dir = _require(templates_dir or (build_config.templates_dir if build_config else None), "build.templates_dir")
     manifest = manifest or (build_config.output_dir / "manifest.json" if build_config else None)
-    output = output or (report_config.output if report_config else Path("html/summary.html"))
+    output = _require(output or (report_config.output if report_config else None), "report.output")
     base_url = base_url or (report_config.base_url if report_config else "")
     title = title or (report_config.title if report_config else "")
 
