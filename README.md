@@ -79,13 +79,13 @@ Optional `logs` and `report` sections configure the `beemo-logs` and `beemo-repo
 
 ```yml
 logs:
-  logs_dir: ../apache2               # directory of gzipped Apache log files
-  csv_dir: ../csv                    # output directory for processed CSVs
+  logs_dir: apache2                  # directory of gzipped Apache log files
+  csv_dir: csv                       # output directory for processed CSVs
   pattern: "bennuttall.com-access*"  # glob filter for log filenames
 
 report:
-  csv_dir: ../csv                    # input CSV directory
-  output: ../html/summary.html       # report output path
+  csv_dir: csv                       # input CSV directory
+  output: html/summary.html          # report output path
   base_url: https://bennuttall.com
   title: ""                          # optional; derived from base_url and date range if omitted
 ```
@@ -117,13 +117,13 @@ pip install beemo[logs]
 
 Create a virtual environment and run `make develop` to install the library and its dependencies.
 
-This can be served locally with e.g. `python -m http.server -d www` and viewed at e.g.
-`http://localhost:8000`.
-
 ### Build
 
-Build your site by running the command `beemo` with the environment variable `BEEMO_CONFIG` set
-pointing at a valid config file. It will build your site into your configured `output_dir`.
+Build your site by running the command `beemo build` with the environment variable `BEEMO_CONFIG`
+set pointing at a valid config file. It will build your site into your configured `output_dir`.
+
+This can be served locally with e.g. `python -m http.server -d www` and viewed at e.g.
+`http://localhost:8000`.
 
 ### Log analytics
 

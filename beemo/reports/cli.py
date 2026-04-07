@@ -7,7 +7,14 @@ from . import build_report, load_all_csvs
 from .enrich import Manifest
 
 
-def run(csv_dir: Path, templates_dir: Path, manifest: Path | None, output: Path, base_url: str, title: str):
+def run(
+    csv_dir: Path,
+    templates_dir: Path,
+    manifest: Path | None,
+    output: Path,
+    base_url: str,
+    title: str,
+):
     manifest_obj = Manifest(manifest) if manifest and manifest.exists() else None
     rows = load_all_csvs(csv_dir)
     report = build_report(rows, manifest_obj, base_url=base_url)

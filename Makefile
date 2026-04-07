@@ -1,9 +1,11 @@
 develop:
 	pip install "poetry>2"
 	poetry install --all-extras --with dev
+	beemo --install-completion
 
-serve:
-	python -m http.server -d www &
+format:
+	isort .
+	black .
 
 build:
 	rm -rf dist
