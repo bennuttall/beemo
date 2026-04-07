@@ -130,13 +130,13 @@ pointing at a valid config file. It will build your site into your configured `o
 With `beemo[logs]` installed and `logs`/`report` sections in your config, run the full pipeline:
 
 ```bash
-beemo-logs       # process Apache gz logs → CSV files
-beemo            # build site and generate manifest.json
-beemo-report     # generate HTML analytics report
+beemo logs       # process Apache gz logs → CSV files
+beemo build      # build site and generate manifest.json
+beemo report     # generate HTML analytics report
 ```
 
-All three commands read their defaults from `BEEMO_CONFIG`. Any setting can be overridden on the
-command line — run with `--help` for details.
+All three subcommands read their defaults from `BEEMO_CONFIG`. Any setting can be overridden on
+the command line — run with `--help` for details.
 
 ## Examples
 

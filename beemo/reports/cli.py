@@ -15,19 +15,14 @@ DEFAULT_OUTPUT = Path("html/summary.html")
 def _load_config_defaults():
     try:
         from beemo.settings import get_config
-        config = get_config()
-        return config
+        return get_config()
     except Exception:
         return None
 
 
-def main():
-    import argparse
-
+def add_arguments(parser):
     config = _load_config_defaults()
     report_config = config.report if config else None
-
-    parser = argparse.ArgumentParser(description="Generate HTML analytics report from log CSVs")
     parser.add_argument(
         "--csv-dir", type=Path,
         default=report_config.csv_dir if report_config else DEFAULT_CSV_DIR,
@@ -55,8 +50,9 @@ def main():
         default=report_config.title if report_config else "",
         help="Report title (default: derived from base-url and date range)",
     )
-    args = parser.parse_args()
 
+
+def run(args):
     manifest = Manifest(args.manifest) if args.manifest and args.manifest.exists() else None
     rows = load_all_csvs(args.csv_dir)
     report = build_report(rows, manifest, base_url=args.base_url)
