@@ -61,7 +61,7 @@ def do_report(
         Optional[Path], typer.Option(help="Chameleon templates directory")
     ] = None,
     manifest: Annotated[Optional[Path], typer.Option(help="manifest.json from beemo build")] = None,
-    output: Annotated[Optional[Path], typer.Option(help="Output HTML file")] = None,
+    output_dir: Annotated[Optional[Path], typer.Option(help="Output directory")] = None,
     base_url: Annotated[
         Optional[str], typer.Option(help="Site base URL e.g. https://bennuttall.com")
     ] = None,
@@ -82,11 +82,11 @@ def do_report(
         "build.templates_dir",
     )
     manifest = manifest or (build_config.output_dir / "manifest.json" if build_config else None)
-    output = _require(output or (report_config.output if report_config else None), "report.output")
+    output_dir = _require(output_dir or (report_config.output_dir if report_config else None), "report.output_dir")
     base_url = base_url or (report_config.base_url if report_config else "")
     title = title or (report_config.title if report_config else "")
 
-    run(csv_dir, templates_dir, manifest, output, base_url, title)
+    run(csv_dir, templates_dir, manifest, output_dir, base_url, title)
 
 
 def main():

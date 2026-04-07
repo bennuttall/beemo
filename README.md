@@ -74,21 +74,39 @@ automatically.
 
 ### Log analytics
 
-Optional `logs` and `report` sections configure the `beemo-logs` and `beemo-report` commands.
-`templates_dir` and `manifest` are taken from the `build` section automatically.
+Optional `logs` and `report` sections configure the `beemo logs` and `beemo report` commands.
+`templates_dir` and `manifest` are taken from the `build` section automatically. All directory
+paths are required — there are no hardcoded defaults.
 
 ```yml
 logs:
   logs_dir: apache2                  # directory of gzipped Apache log files
   csv_dir: csv                       # output directory for processed CSVs
-  pattern: "bennuttall.com-access*"  # glob filter for log filenames
+  pattern: "mysite.com-access*"      # glob filter for log filenames (default: *.gz)
 
 report:
   csv_dir: csv                       # input CSV directory
-  output: html/summary.html          # report output path
-  base_url: https://bennuttall.com
-  title: ""                          # optional; derived from base_url and date range if omitted
+  output_dir: html/mysite            # output directory for the analytics site
+  base_url: https://mysite.com
+  title: ""                          # optional; derived from base_url if omitted
 ```
+
+The report generates a multi-page analytics site:
+
+```
+output_dir/
+├── index.html          ← last 30 days summary
+└── 2026/
+    ├── index.html      ← full year
+    ├── 03/
+    │   └── index.html  ← March 2026
+    └── 04/
+        └── index.html  ← April 2026
+```
+
+The report template (`report.pt`) must be placed in your site's `templates_dir` alongside your
+other Chameleon templates. It receives `report` (analytics data dict) and `nav` (navigation
+context) as template variables.
 
 ### Environment variables
 
