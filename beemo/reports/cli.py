@@ -34,11 +34,11 @@ def main():
     )
     parser.add_argument(
         "--templates-dir", type=Path,
-        default=config.templates_dir if config else DEFAULT_TEMPLATES_DIR,
+        default=config.build.templates_dir if config and config.build else DEFAULT_TEMPLATES_DIR,
     )
     parser.add_argument(
         "--manifest", type=Path,
-        default=config.output_dir / "manifest.json" if config else None,
+        default=config.build.output_dir / "manifest.json" if config and config.build else None,
         help="manifest.json from beemo build",
     )
     parser.add_argument(

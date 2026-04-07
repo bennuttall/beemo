@@ -8,7 +8,7 @@ from .settings import get_config
 from .utils import get_excerpt, get_text
 
 
-settings = get_config()
+settings = get_config().build
 
 
 class PostType(BaseModel):

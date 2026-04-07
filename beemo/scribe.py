@@ -21,7 +21,10 @@ logger = get_logger()
 class TheScribe:
     def __init__(self):
         self.now = datetime.now(timezone.utc)
-        self.config = get_config()
+        config = get_config()
+        if config.build is None:
+            raise ValueError("No [build] section in config")
+        self.config = config.build
         self.output_path = self.config.output_dir
         self.templates = PageTemplateLoader(
             search_path=[self.config.templates_dir],

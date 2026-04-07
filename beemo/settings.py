@@ -2,14 +2,7 @@ from functools import cache
 from pathlib import Path
 
 import yaml
-from pydantic import (
-    BaseModel,
-    DirectoryPath,
-    Field,
-    FilePath,
-    field_validator,
-    model_validator,
-)
+from pydantic import BaseModel, Field, FilePath, model_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
@@ -17,6 +10,21 @@ class Settings(BaseSettings):
     model_config = SettingsConfigDict(env_file=".env", env_prefix="beemo_")
 
     config: FilePath
+
+
+class BuildConfig(BaseModel):
+    pages_dir: Path | None = None
+    posts_dir: Path | None = None
+    static_dir: Path
+    templates_dir: Path
+    output_dir: Path
+    blog_root: Path = Path()
+
+    @model_validator(mode="after")
+    def posts_or_pages_required(self):
+        if self.posts_dir is None and self.pages_dir is None:
+            raise ValueError("build: either posts_dir or pages_dir must be set")
+        return self
 
 
 class LogsConfig(BaseModel):
@@ -33,39 +41,20 @@ class ReportConfig(BaseModel):
 
 
 class Config(BaseModel):
-    root_path: DirectoryPath
-    pages_dir: DirectoryPath | None = None
-    posts_dir: DirectoryPath | None = None
-    static_dir: DirectoryPath
-    templates_dir: DirectoryPath
-    output_dir: DirectoryPath
-    blog_root: Path = Path()
+    root_path: Path
+    build: BuildConfig | None = None
     logs: LogsConfig = Field(default_factory=LogsConfig)
     report: ReportConfig = Field(default_factory=ReportConfig)
 
-    @field_validator(
-        "pages_dir",
-        "posts_dir",
-        "static_dir",
-        "templates_dir",
-        "output_dir",
-        mode="before",
-    )
-    @classmethod
-    def make_relative(cls, value, info):
-        if isinstance(value, str) and not Path(value).is_absolute():
-            return info.data["root_path"] / value
-        return value
-
     @model_validator(mode="after")
-    def posts_or_pages_mode(self):
-        if self.posts_dir is None and self.pages_dir is None:
-            raise ValueError("Either posts_dir or pages_dir must be set")
-        return self
-
-    @model_validator(mode="after")
-    def resolve_logs_report_paths(self):
+    def resolve_paths(self):
         root = self.root_path
+        if self.build:
+            b = self.build
+            for attr in ("pages_dir", "posts_dir", "static_dir", "templates_dir", "output_dir"):
+                p = getattr(b, attr)
+                if p is not None and not p.is_absolute():
+                    setattr(b, attr, root / p)
         for attr in ("logs_dir", "csv_dir"):
             p = getattr(self.logs, attr)
             if not p.is_absolute():

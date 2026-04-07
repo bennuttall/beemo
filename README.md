@@ -50,60 +50,45 @@ docs](https://chameleon.readthedocs.io/en/latest/) for reference.
 
 ## Configuration
 
-The Beemo config file is a YAML file specifying some basic config about your site build.
+The Beemo config file is a YAML file with three optional top-level sections: `build`, `logs`,
+and `report`. All paths are relative to the config file.
 
-For example, here `pages_dir` and `posts_dir` are both specified, and the site will be built with
-both pages and blog posts:
+### Site build
 
-```yml
-posts_dir: content/posts
-pages_dir: content/pages
-static_dir: static
-templates_dir: templates
-blog_root: blog
-output_dir: www
-```
-
-If `pages_dir` is not specified, the site will be built without pages (i.e. blog only mode), e.g:
+The `build` section configures the `beemo` site builder. Here `pages_dir` and `posts_dir` are
+both specified — the site will be built with both pages and blog posts:
 
 ```yml
-posts_dir: posts
-static_dir: static
-templates_dir: templates
-output_dir: www
+build:
+  posts_dir: content/posts
+  pages_dir: content/pages
+  static_dir: static
+  templates_dir: templates
+  blog_root: blog
+  output_dir: www
 ```
 
-If `posts_dir` is not specified, the site will be built without pages (i.e. pages only mode), e.g:
-
-```yml
-pages_dir: pages
-static_dir: static
-templates_dir: templates
-output_dir: www
-```
-
-If `posts_dir` is specified, this comes with archives, tag indexes and such which cannot currently
-be disabled.
+Omit `pages_dir` for blog-only mode, or omit `posts_dir` for pages-only mode. Either one must
+be present. If `posts_dir` is specified, archives, tag indexes and such are generated
+automatically.
 
 ### Log analytics
 
 Optional `logs` and `report` sections configure the `beemo-logs` and `beemo-report` commands.
-All paths are relative to the config file:
+`templates_dir` and `manifest` are taken from the `build` section automatically.
 
 ```yml
 logs:
-  logs_dir: ../apache2           # directory of gzipped Apache log files
-  csv_dir: ../csv                # output directory for processed CSVs
+  logs_dir: ../apache2               # directory of gzipped Apache log files
+  csv_dir: ../csv                    # output directory for processed CSVs
   pattern: "bennuttall.com-access*"  # glob filter for log filenames
 
 report:
-  csv_dir: ../csv                # input CSV directory
-  output: ../html/summary.html   # report output path
+  csv_dir: ../csv                    # input CSV directory
+  output: ../html/summary.html       # report output path
   base_url: https://bennuttall.com
-  title: ""                      # optional; derived from base_url and date range if omitted
+  title: ""                          # optional; derived from base_url and date range if omitted
 ```
-
-`templates_dir` and `manifest` are taken from the main site config automatically.
 
 ### Environment variables
 
