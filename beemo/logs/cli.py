@@ -4,20 +4,44 @@ from pathlib import Path
 from . import is_processed, process_log_file
 
 
+DEFAULT_LOGS_DIR = Path("apache2")
 DEFAULT_CSV_DIR = Path("csv")
+DEFAULT_PATTERN = "*.gz"
+
+
+def _load_config_defaults():
+    try:
+        from beemo.settings import get_config
+        config = get_config()
+        return config.logs
+    except Exception:
+        return None
 
 
 def main():
     import argparse
 
+    logs_config = _load_config_defaults()
+
     parser = argparse.ArgumentParser(description="Process Apache log gz files into CSV")
-    parser.add_argument("input", type=Path, help="gz file or directory of gz files")
     parser.add_argument(
-        "--csv-dir", type=Path, default=DEFAULT_CSV_DIR, help="Output directory (default: csv/)"
+        "input", nargs="?", type=Path,
+        default=logs_config.logs_dir if logs_config else DEFAULT_LOGS_DIR,
+        help="gz file or directory of gz files (default: apache2/)",
+    )
+    parser.add_argument(
+        "--csv-dir", type=Path,
+        default=logs_config.csv_dir if logs_config else DEFAULT_CSV_DIR,
+        help="Output directory (default: csv/)",
+    )
+    parser.add_argument(
+        "--pattern",
+        default=logs_config.pattern if logs_config else DEFAULT_PATTERN,
+        help="Filename glob pattern when input is a directory (default: *.gz)",
     )
     args = parser.parse_args()
 
-    gz_files = sorted(args.input.rglob("*.gz")) if args.input.is_dir() else [args.input]
+    gz_files = sorted(args.input.rglob(args.pattern)) if args.input.is_dir() else [args.input]
 
     for f in gz_files:
         if not is_processed(f, args.csv_dir):

@@ -20,6 +20,7 @@ generate you a deployable HTML website/blog.
 - Atom feed
 - Custom Chameleon templates
 - Custom CSS, JS and other static files
+- Apache log analytics (optional, via `beemo[logs]`)
 
 ## Usage
 
@@ -84,6 +85,26 @@ output_dir: www
 If `posts_dir` is specified, this comes with archives, tag indexes and such which cannot currently
 be disabled.
 
+### Log analytics
+
+Optional `logs` and `report` sections configure the `beemo-logs` and `beemo-report` commands.
+All paths are relative to the config file:
+
+```yml
+logs:
+  logs_dir: ../apache2           # directory of gzipped Apache log files
+  csv_dir: ../csv                # output directory for processed CSVs
+  pattern: "bennuttall.com-access*"  # glob filter for log filenames
+
+report:
+  csv_dir: ../csv                # input CSV directory
+  output: ../html/summary.html   # report output path
+  base_url: https://bennuttall.com
+  title: ""                      # optional; derived from base_url and date range if omitted
+```
+
+`templates_dir` and `manifest` are taken from the main site config automatically.
+
 ### Environment variables
 
 The only environment variable required is `BEEMO_CONFIG` which must point to your site's config
@@ -101,6 +122,12 @@ Install the latest release with:
 pip install beemo
 ```
 
+For Apache log analytics, install the `logs` extra:
+
+```
+pip install beemo[logs]
+```
+
 ### Development
 
 Create a virtual environment and run `make develop` to install the library and its dependencies.
@@ -112,6 +139,19 @@ This can be served locally with e.g. `python -m http.server -d www` and viewed a
 
 Build your site by running the command `beemo` with the environment variable `BEEMO_CONFIG` set
 pointing at a valid config file. It will build your site into your configured `output_dir`.
+
+### Log analytics
+
+With `beemo[logs]` installed and `logs`/`report` sections in your config, run the full pipeline:
+
+```bash
+beemo-logs       # process Apache gz logs → CSV files
+beemo            # build site and generate manifest.json
+beemo-report     # generate HTML analytics report
+```
+
+All three commands read their defaults from `BEEMO_CONFIG`. Any setting can be overridden on the
+command line — run with `--help` for details.
 
 ## Examples
 
