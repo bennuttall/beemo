@@ -74,4 +74,15 @@ def get_config() -> Config:
     with open(settings.config, "r") as f:
         config = yaml.safe_load(f)
     config["root_path"] = settings.config.parent.absolute()
+
+    # Merge top-level keys into sub-sections as defaults (sub-section values take precedence)
+    known_keys = {"root_path", "build", "logs", "analytics"}
+    top_level_defaults = {k: v for k, v in config.items() if k not in known_keys}
+    for key in top_level_defaults:
+        del config[key]
+    for section in ("build", "logs", "analytics"):
+        if config.get(section):
+            for key, value in top_level_defaults.items():
+                config[section].setdefault(key, value)
+
     return Config.model_validate(config)
