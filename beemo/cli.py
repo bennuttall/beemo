@@ -60,7 +60,6 @@ def do_analytics(
     templates_dir: Annotated[
         Optional[Path], typer.Option(help="Chameleon templates directory")
     ] = None,
-    manifest: Annotated[Optional[Path], typer.Option(help="manifest.json from beemo build")] = None,
     output_dir: Annotated[Optional[Path], typer.Option(help="Output directory")] = None,
     base_url: Annotated[
         Optional[str], typer.Option(help="Site base URL e.g. https://bennuttall.com")
@@ -78,10 +77,9 @@ def do_analytics(
         csv_dir or (analytics_config.csv_dir if analytics_config else None), "analytics.csv_dir"
     )
     templates_dir = _require(
-        templates_dir or (build_config.templates_dir if build_config else None),
-        "build.templates_dir",
+        templates_dir or (analytics_config.templates_dir if analytics_config else None),
+        "analytics.templates_dir",
     )
-    manifest = manifest or (build_config.output_dir / "manifest.json" if build_config else None)
     output_dir = _require(
         output_dir or (analytics_config.output_dir if analytics_config else None),
         "analytics.output_dir",
@@ -89,7 +87,7 @@ def do_analytics(
     base_url = base_url or (analytics_config.base_url if analytics_config else "")
     title = title or (analytics_config.title if analytics_config else "")
 
-    run(csv_dir, templates_dir, manifest, output_dir, base_url, title)
+    run(csv_dir, templates_dir, build_config, output_dir, base_url, title)
 
 
 def main():

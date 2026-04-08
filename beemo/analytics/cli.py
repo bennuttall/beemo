@@ -19,12 +19,16 @@ def _rel(from_page: str, to_page: str) -> str:
 def run(
     csv_dir: Path,
     templates_dir: Path,
-    manifest: Path | None,
+    build_config,
     output_dir: Path,
     base_url: str,
     title: str,
 ):
-    manifest_obj = Manifest(manifest) if manifest and manifest.exists() else None
+    if build_config is not None:
+        from beemo.scribe import build_manifest_entries
+        manifest_obj = Manifest(build_manifest_entries(build_config))
+    else:
+        manifest_obj = None
     all_rows = load_all_csvs(csv_dir)
 
     by_year: dict[int, list] = defaultdict(list)

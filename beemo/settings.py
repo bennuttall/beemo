@@ -36,6 +36,7 @@ class LogsConfig(BaseModel):
 class AnalyticsConfig(BaseModel):
     csv_dir: Path
     output_dir: Path
+    templates_dir: Path
     base_url: str = ""
     title: str = ""
 
@@ -60,7 +61,7 @@ class Config(BaseModel):
                 if not p.is_absolute():
                     setattr(self.logs, attr, root / p)
         if self.analytics:
-            for attr in ("csv_dir", "output_dir"):
+            for attr in ("csv_dir", "output_dir", "templates_dir"):
                 p = getattr(self.analytics, attr)
                 if not p.is_absolute():
                     setattr(self.analytics, attr, root / p)
