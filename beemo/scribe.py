@@ -19,20 +19,28 @@ logger = get_logger()
 
 
 class TheScribe:
-    def __init__(self):
+    def __init__(self, config):
         self.now = datetime.now(timezone.utc)
-        config = get_config()
-        if config.build is None:
-            raise ValueError("No [build] section in config")
-        self.config = config.build
-        self.output_path = self.config.output_dir
+        self.config = config
+        self.output_path = config.output_dir
         self.templates = PageTemplateLoader(
-            search_path=[self.config.templates_dir],
+            search_path=[config.templates_dir],
             default_extension=".pt",
         )
         self.pages = list(self.iter_pages())
         self.posts = sorted(self.iter_posts(), key=lambda p: p.published)
         self.tags = self.get_tags()
+
+    @classmethod
+    def from_env(cls) -> "TheScribe":
+        config = get_config()
+        if config.build is None:
+            raise ValueError("No [build] section in config")
+        return cls(config.build)
+
+    @classmethod
+    def from_build_config(cls, config) -> "TheScribe":
+        return cls(config)
 
     def setup_output_path(self):
         logger.info("Setting up output path", output_path=str(self.output_path))
@@ -338,14 +346,7 @@ class TheScribe:
 
 def build_manifest_entries(config) -> list[dict]:
     """Generate manifest entries from site content without writing to disk."""
-    scribe = TheScribe.__new__(TheScribe)
-    scribe.now = datetime.now(timezone.utc)
-    scribe.config = config
-    scribe.output_path = config.output_dir
-    scribe.templates = None
-    scribe.pages = list(scribe.iter_pages())
-    scribe.posts = sorted(scribe.iter_posts(), key=lambda p: p.published)
-    scribe.tags = scribe.get_tags()
+    scribe = TheScribe.from_build_config(config)
 
     entries = []
 
@@ -422,5 +423,4 @@ def validate_page(page_data: dict[str], src_dir: Path) -> Page:
 
 
 def main():
-    scribe = TheScribe()
-    scribe.build_site()
+    TheScribe.from_env().build_site()

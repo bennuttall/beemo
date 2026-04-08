@@ -28,7 +28,7 @@ def do_build():
     """Build the site."""
     from .scribe import TheScribe
 
-    TheScribe().build_site()
+    TheScribe.from_env().build_site()
 
 
 @app.command("logs")
