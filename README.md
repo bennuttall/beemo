@@ -35,7 +35,7 @@ an `images` directory, used within your post.
 
 ### Pages
 
-Populate your `pages` directory with your pages. Each page must be in its own directory. Post
+Populate your `pages` directory with your pages. Each page must be in its own directory. Page
 directories must contain a `meta.yml` and a content file (`index.html`, `index.md` or `index.rst`).
 
 ### Static
@@ -66,6 +66,7 @@ build:
   posts_dir: content/posts
   pages_dir: content/pages
   static_dir: static
+  templates_dir: templates
   blog_root: blog
   output_dir: www
 ```
@@ -90,21 +91,27 @@ analytics:
   title: ""                          # optional; derived from base_url if omitted
 ```
 
-Since `templates_dir` and `csv_dir` are shared between sections, they can be hoisted to the top
-level:
+If `templates_dir` or `csv_dir` are shared between sections, they can be hoisted to the top
+level to avoid repetition — each section inherits the top-level value unless it defines its own:
 
 ```yml
 templates_dir: templates
 csv_dir: csv
 
 build:
-  ...
+  posts_dir: content/posts
+  pages_dir: content/pages
+  static_dir: static
+  blog_root: blog
+  output_dir: www
 
 logs:
-  ...
+  logs_dir: apache2
+  pattern: "mysite.com-access*"
 
 analytics:
-  ...
+  output_dir: analytics
+  base_url: https://mysite.com
 ```
 
 The analytics output is a multi-page site:
@@ -121,8 +128,16 @@ output_dir/
 ```
 
 The analytics template (`analytics.pt`) must be placed in your site's `templates_dir` alongside
-your other Chameleon templates. It receives `report` (analytics data dict) and `nav` (navigation
-context) as template variables.
+your other Chameleon templates. It receives the following template variables:
+
+| Variable   | Description |
+|------------|-------------|
+| `report`   | Analytics data dict (totals, hits by day/month, pages, UAs, referrers) |
+| `nav`      | Navigation context (breadcrumbs, year/month links, current page) |
+| `json`     | Python's `json` module, for serialising chart data |
+| `datetime` | Python's `datetime` class, for formatting ISO date strings |
+
+Dates in `report` are ISO strings (`2026-03-01`) so templates can format them as needed.
 
 ### Environment variables
 
@@ -170,6 +185,9 @@ beemo analytics  # generate HTML analytics site
 
 Both subcommands read their defaults from `BEEMO_CONFIG`. Any setting can be overridden on
 the command line — run with `--help` for details.
+
+`beemo analytics` is incremental: year and month pages are skipped if their output file is newer
+than all source CSVs. The summary page (last 30 days) always regenerates.
 
 ## Examples
 
