@@ -45,10 +45,12 @@ def run(
 
     csv_files = sorted(csv_dir.rglob("*.csv"))
     latest_csv_mtime = max((f.stat().st_mtime for f in csv_files), default=0)
+    template_mtime = (templates_dir / "analytics.pt").stat().st_mtime
+    latest_source_mtime = max(latest_csv_mtime, template_mtime)
 
     def write_page(page_path: str, rows: list, nav: dict, period_label: str, always: bool = False):
         out = output_dir / page_path
-        if not always and out.exists() and out.stat().st_mtime >= latest_csv_mtime:
+        if not always and out.exists() and out.stat().st_mtime >= latest_source_mtime:
             return
         report = build_analytics(rows, manifest_obj, base_url=base_url)
         page_title = title or f"{site} — {period_label}"
@@ -59,17 +61,28 @@ def run(
         out.write_text(html)
         print(out)
 
+    all_years = sorted(by_year.keys(), reverse=True)
+    year_buttons = [{"label": "All time", "url": "all/"}] + [
+        {"label": str(y), "url": f"{y}/"} for y in all_years
+    ]
+
     # Summary — last 30 days
     cutoff = datetime.now() - timedelta(days=30)
     summary_rows = [r for r in all_rows if datetime.fromisoformat(r["time"]) >= cutoff]
     summary_nav = {
         "type": "summary",
         "breadcrumbs": [],
-        "years": [{"label": str(y), "url": f"{y}/"} for y in sorted(by_year.keys(), reverse=True)],
+        "years": year_buttons,
     }
     write_page("index.html", summary_rows, summary_nav, "Last 30 days", always=True)
 
-    all_years = sorted(by_year.keys(), reverse=True)
+    # All-time page
+    all_time_nav = {
+        "type": "all-time",
+        "breadcrumbs": [{"label": "Summary", "url": "../"}],
+        "years": [{"label": str(y), "url": f"../{y}/"} for y in all_years],
+    }
+    write_page("all/index.html", all_rows, all_time_nav, "All time")
 
     # Year pages
     for year in sorted(by_year.keys()):

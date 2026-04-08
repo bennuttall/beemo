@@ -26,7 +26,7 @@ def build_analytics(rows: list[dict], manifest: Manifest | None = None, base_url
     month_counts = Counter(t.strftime("%Y-%m") for t in times)
     months_iso = sorted(month_counts)
     hits_by_month = [month_counts[m] for m in months_iso]
-    months = [datetime.strptime(m, "%Y-%m").strftime("%b %Y") for m in months_iso]
+    months = months_iso  # "YYYY-MM" strings; templates format for display
 
     human_rows = [r for r in rows if r.get("is_bot", "False") not in ("True", True)]
     bot_rows = [r for r in rows if r.get("is_bot", "False") in ("True", True)]
