@@ -50,12 +50,15 @@ docs](https://chameleon.readthedocs.io/en/latest/) for reference.
 
 ## Configuration
 
-The Beemo config file is a YAML file with three optional top-level sections: `build`, `logs`,
-and `report`. All paths are relative to the config file.
+The Beemo config file is a YAML file with three optional sections: `build`, `logs`, and `analytics`.
+All paths are relative to the config file.
+
+Keys shared between sections can be placed at the top level to avoid repetition — each section
+inherits the top-level value unless it defines its own.
 
 ### Site build
 
-The `build` section configures the `beemo` site builder. Here `pages_dir` and `posts_dir` are
+The `build` section configures the `beemo build` command. Here `pages_dir` and `posts_dir` are
 both specified — the site will be built with both pages and blog posts:
 
 ```yml
@@ -63,7 +66,6 @@ build:
   posts_dir: content/posts
   pages_dir: content/pages
   static_dir: static
-  templates_dir: templates
   blog_root: blog
   output_dir: www
 ```
@@ -74,24 +76,38 @@ automatically.
 
 ### Log analytics
 
-Optional `logs` and `report` sections configure the `beemo logs` and `beemo report` commands.
-`templates_dir` and `manifest` are taken from the `build` section automatically. All directory
-paths are required — there are no hardcoded defaults.
+Optional `logs` and `analytics` sections configure the `beemo logs` and `beemo analytics`
+commands. All directory paths are required — there are no hardcoded defaults.
 
 ```yml
 logs:
   logs_dir: apache2                  # directory of gzipped Apache log files
-  csv_dir: csv                       # output directory for processed CSVs
   pattern: "mysite.com-access*"      # glob filter for log filenames (default: *.gz)
 
-report:
-  csv_dir: csv                       # input CSV directory
+analytics:
   output_dir: html/mysite            # output directory for the analytics site
   base_url: https://mysite.com
   title: ""                          # optional; derived from base_url if omitted
 ```
 
-The report generates a multi-page analytics site:
+Since `templates_dir` and `csv_dir` are shared between sections, they can be hoisted to the top
+level:
+
+```yml
+templates_dir: templates
+csv_dir: csv
+
+build:
+  ...
+
+logs:
+  ...
+
+analytics:
+  ...
+```
+
+The analytics output is a multi-page site:
 
 ```
 output_dir/
@@ -104,8 +120,8 @@ output_dir/
         └── index.html  ← April 2026
 ```
 
-The report template (`report.pt`) must be placed in your site's `templates_dir` alongside your
-other Chameleon templates. It receives `report` (analytics data dict) and `nav` (navigation
+The analytics template (`analytics.pt`) must be placed in your site's `templates_dir` alongside
+your other Chameleon templates. It receives `report` (analytics data dict) and `nav` (navigation
 context) as template variables.
 
 ### Environment variables
@@ -145,15 +161,14 @@ This can be served locally with e.g. `python -m http.server -d www` and viewed a
 
 ### Log analytics
 
-With `beemo[logs]` installed and `logs`/`report` sections in your config, run the full pipeline:
+With `beemo[logs]` installed and `logs`/`analytics` sections in your config, run the full pipeline:
 
 ```bash
 beemo logs       # process Apache gz logs → CSV files
-beemo build      # build site and generate manifest.json
-beemo report     # generate HTML analytics report
+beemo analytics  # generate HTML analytics site
 ```
 
-All three subcommands read their defaults from `BEEMO_CONFIG`. Any setting can be overridden on
+Both subcommands read their defaults from `BEEMO_CONFIG`. Any setting can be overridden on
 the command line — run with `--help` for details.
 
 ## Examples

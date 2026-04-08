@@ -32,7 +32,12 @@ def build_analytics(rows: list[dict], manifest: Manifest | None = None, base_url
     bot_rows = [r for r in rows if r.get("is_bot", "False") in ("True", True)]
 
     path_counts = Counter(r["path"] for r in rows)
-    ua_counts = Counter(r["ua"] for r in rows).most_common(15)
+    ua_all = Counter(r["ua"] for r in rows)
+    ua_bot = Counter(r["ua"] for r in bot_rows)
+    ua_counts = [
+        {"ua": ua, "hits": n, "is_bot": ua_bot[ua] > n / 2}
+        for ua, n in ua_all.most_common(15)
+    ]
     unique_ips = len(set(r["remote_host"] for r in rows))
 
     base_domain = (
@@ -58,17 +63,15 @@ def build_analytics(rows: list[dict], manifest: Manifest | None = None, base_url
             sections["other"].append(entry)
 
     total = len(rows)
-    human_pct = round(100 * len(human_rows) / total, 1) if total else 0.0
     bot_pct = round(100 * len(bot_rows) / total, 1) if total else 0.0
 
     return {
-        "date_from": dates[0].strftime("%d/%m/%Y") if dates else "",
-        "date_to": dates[-1].strftime("%d/%m/%Y") if dates else "",
+        "date_from": dates[0].isoformat() if dates else "",
+        "date_to": dates[-1].isoformat() if dates else "",
         "total_hits": total,
-        "human_hits": human_pct,
         "bot_hits": bot_pct,
         "unique_ips": unique_ips,
-        "dates": [d.strftime("%d/%m/%Y") for d in dates],
+        "dates": [d.isoformat() for d in dates],
         "hits_by_day": hits_by_day,
         "months": months,
         "hits_by_month": hits_by_month,
