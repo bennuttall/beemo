@@ -57,12 +57,16 @@ def build_analytics(rows: list[dict], manifest: Manifest | None = None, base_url
         else:
             sections["other"].append(entry)
 
+    total = len(rows)
+    human_pct = round(100 * len(human_rows) / total, 1) if total else 0.0
+    bot_pct = round(100 * len(bot_rows) / total, 1) if total else 0.0
+
     return {
         "date_from": dates[0].strftime("%d/%m/%Y") if dates else "",
         "date_to": dates[-1].strftime("%d/%m/%Y") if dates else "",
-        "total_hits": len(rows),
-        "human_hits": len(human_rows),
-        "bot_hits": len(bot_rows),
+        "total_hits": total,
+        "human_hits": human_pct,
+        "bot_hits": bot_pct,
         "unique_ips": unique_ips,
         "dates": [d.strftime("%d/%m/%Y") for d in dates],
         "hits_by_day": hits_by_day,
