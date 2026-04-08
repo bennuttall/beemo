@@ -51,7 +51,7 @@ def process_log_file(gz_file: Path, csv_dir: Path) -> int:
         with ApacheSource(logf, COMBINED) as src:
             for row in src:
                 if (
-                    row.status == 200
+                    row.status in (200, 304)
                     and row.request is not None
                     and row.request.url is not None
                     and is_html(row.request.url.path_str)
