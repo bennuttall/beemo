@@ -5,6 +5,8 @@ import user_agents
 UA_OVERRIDES = [
     ("ChatGPT", "ChatGPT", True),
     ("Feedly", "Feedly", True),
+    ("Bytespider", "Bytespider", True),
+    ("Go-http-client", "Go-http-client", True),
 ]
 
 
