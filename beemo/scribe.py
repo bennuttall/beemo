@@ -361,13 +361,15 @@ def build_manifest_entries(config) -> list[dict]:
 
     if config.posts_dir is not None:
         for post in reversed(scribe.posts):
-            entries.append({
-                "url": url(post.link),
-                "title": post.title,
-                "type": "post",
-                "published": post.published.date().isoformat(),
-                "tags": post.tags,
-            })
+            entries.append(
+                {
+                    "url": url(post.link),
+                    "title": post.title,
+                    "type": "post",
+                    "published": post.published.date().isoformat(),
+                    "tags": post.tags,
+                }
+            )
 
         blog = config.blog_root
         entries.append({"url": url(blog), "title": "Blog", "type": "index"})
@@ -390,11 +392,13 @@ def build_manifest_entries(config) -> list[dict]:
             entries.append({"url": url(blog / y), "title": f"Archive: {y}", "type": "archive"})
         for y, m in months:
             month_name = datetime.strptime(m, "%m").strftime("%B")
-            entries.append({
-                "url": url(blog / y / m),
-                "title": f"Archive: {month_name} {y}",
-                "type": "archive",
-            })
+            entries.append(
+                {
+                    "url": url(blog / y / m),
+                    "title": f"Archive: {month_name} {y}",
+                    "type": "archive",
+                }
+            )
 
     return entries
 

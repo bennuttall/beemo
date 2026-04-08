@@ -35,8 +35,7 @@ def build_analytics(rows: list[dict], manifest: Manifest | None = None, base_url
     ua_all = Counter(r["ua"] for r in rows)
     ua_bot = Counter(r["ua"] for r in bot_rows)
     ua_counts = [
-        {"ua": ua, "hits": n, "is_bot": ua_bot[ua] > n / 2}
-        for ua, n in ua_all.most_common(15)
+        {"ua": ua, "hits": n, "is_bot": ua_bot[ua] > n / 2} for ua, n in ua_all.most_common(15)
     ]
     unique_ips = len(set(r["remote_host"] for r in rows))
 

@@ -26,6 +26,7 @@ def run(
 ):
     if build_config is not None:
         from beemo.scribe import build_manifest_entries
+
         manifest_obj = Manifest(build_manifest_entries(build_config))
     else:
         manifest_obj = None
@@ -51,7 +52,9 @@ def run(
             return
         report = build_analytics(rows, manifest_obj, base_url=base_url)
         page_title = title or f"{site} — {period_label}"
-        html = templates["analytics"](report=report, title=page_title, json=json, datetime=datetime, nav=nav)
+        html = templates["analytics"](
+            report=report, title=page_title, json=json, datetime=datetime, nav=nav
+        )
         out.parent.mkdir(parents=True, exist_ok=True)
         out.write_text(html)
         print(out)
@@ -62,10 +65,7 @@ def run(
     summary_nav = {
         "type": "summary",
         "breadcrumbs": [],
-        "years": [
-            {"label": str(y), "url": f"{y}/"}
-            for y in sorted(by_year.keys(), reverse=True)
-        ],
+        "years": [{"label": str(y), "url": f"{y}/"} for y in sorted(by_year.keys(), reverse=True)],
     }
     write_page("index.html", summary_rows, summary_nav, "Last 30 days", always=True)
 
@@ -78,8 +78,7 @@ def run(
             "type": "year",
             "breadcrumbs": [{"label": "Summary", "url": "../"}],
             "years": [
-                {"label": str(y), "url": f"../{y}/", "current": y == year}
-                for y in all_years
+                {"label": str(y), "url": f"../{y}/", "current": y == year} for y in all_years
             ],
             "months": [
                 {"label": calendar.month_name[m], "url": f"{m:02d}/"}
