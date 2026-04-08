@@ -7,7 +7,7 @@ from pathlib import Path
 
 from chameleon import PageTemplateLoader
 
-from . import build_report, load_all_csvs
+from . import build_analytics, load_all_csvs
 from .enrich import Manifest
 
 
@@ -39,9 +39,9 @@ def run(
     templates = PageTemplateLoader(search_path=[str(templates_dir)], default_extension=".pt")
 
     def write_page(page_path: str, rows: list, nav: dict, period_label: str):
-        report = build_report(rows, manifest_obj, base_url=base_url)
+        report = build_analytics(rows, manifest_obj, base_url=base_url)
         page_title = title or f"{site} — {period_label}"
-        html = templates["report"](report=report, title=page_title, json=json, nav=nav)
+        html = templates["analytics"](report=report, title=page_title, json=json, nav=nav)
         out = output_dir / page_path
         out.parent.mkdir(parents=True, exist_ok=True)
         out.write_text(html)

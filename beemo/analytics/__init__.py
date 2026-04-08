@@ -18,7 +18,7 @@ def load_all_csvs(csv_dir: Path) -> list[dict]:
     return rows
 
 
-def build_report(rows: list[dict], manifest: Manifest | None = None, base_url: str = "") -> dict:
+def build_analytics(rows: list[dict], manifest: Manifest | None = None, base_url: str = "") -> dict:
     times = [datetime.fromisoformat(r["time"]) for r in rows]
     dates = sorted(set(t.date() for t in times))
     hits_by_day = [sum(1 for t in times if t.date() == d) for d in dates]

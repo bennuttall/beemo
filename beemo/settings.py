@@ -33,7 +33,7 @@ class LogsConfig(BaseModel):
     pattern: str = "*.gz"
 
 
-class ReportConfig(BaseModel):
+class AnalyticsConfig(BaseModel):
     csv_dir: Path
     output_dir: Path
     base_url: str = ""
@@ -44,7 +44,7 @@ class Config(BaseModel):
     root_path: Path
     build: BuildConfig | None = None
     logs: LogsConfig | None = None
-    report: ReportConfig | None = None
+    analytics: AnalyticsConfig | None = None
 
     @model_validator(mode="after")
     def resolve_paths(self):
@@ -59,11 +59,11 @@ class Config(BaseModel):
                 p = getattr(self.logs, attr)
                 if not p.is_absolute():
                     setattr(self.logs, attr, root / p)
-        if self.report:
+        if self.analytics:
             for attr in ("csv_dir", "output_dir"):
-                p = getattr(self.report, attr)
+                p = getattr(self.analytics, attr)
                 if not p.is_absolute():
-                    setattr(self.report, attr, root / p)
+                    setattr(self.analytics, attr, root / p)
         return self
 
 
