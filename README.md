@@ -1,7 +1,8 @@
 # beemo
 
 A Python-based static site generator. Bring your own content and templates and it'll quickly
-generate you a deployable HTML website/blog.
+generate you a deployable HTML website/blog. Also includes support for building a simple analytics
+site based on the known site structure by processing Apache logs.
 
 ![](https://raw.githubusercontent.com/bennuttall/beemo/refs/heads/main/beemo.png)
 
@@ -185,6 +186,13 @@ beemo analytics  # generate HTML analytics site
 
 Both subcommands read their defaults from `BEEMO_CONFIG`. Any setting can be overridden on
 the command line — run with `--help` for details.
+
+Process your Apache logs with `beemo logs` and build your analytics site with `beemo analytics` with
+the environment variable `BEEMO_CONFIG` set pointing at a valid config file. It will build your
+analytics site into your configured `output_dir`.
+
+This can be served locally with e.g. `python -m http.server -d analytics` and viewed at e.g.
+`http://localhost:8000`.
 
 `beemo analytics` is incremental: year and month pages are skipped if their output file is newer
 than all source CSVs. The summary page (last 30 days) always regenerates.
