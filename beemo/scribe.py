@@ -19,17 +19,28 @@ logger = get_logger()
 
 
 class TheScribe:
-    def __init__(self):
+    def __init__(self, config):
         self.now = datetime.now(timezone.utc)
-        self.config = get_config()
-        self.output_path = self.config.output_dir
+        self.config = config
+        self.output_path = config.output_dir
         self.templates = PageTemplateLoader(
-            search_path=[self.config.templates_dir],
+            search_path=[config.templates_dir],
             default_extension=".pt",
         )
         self.pages = list(self.iter_pages())
         self.posts = sorted(self.iter_posts(), key=lambda p: p.published)
         self.tags = self.get_tags()
+
+    @classmethod
+    def from_env(cls) -> "TheScribe":
+        config = get_config()
+        if config.build is None:
+            raise ValueError("No [build] section in config")
+        return cls(config.build)
+
+    @classmethod
+    def from_build_config(cls, config) -> "TheScribe":
+        return cls(config)
 
     def setup_output_path(self):
         logger.info("Setting up output path", output_path=str(self.output_path))
@@ -333,6 +344,66 @@ class TheScribe:
         self.write_sitemap()
 
 
+def build_manifest_entries(config) -> list[dict]:
+    """Generate manifest entries from site content without writing to disk."""
+    scribe = TheScribe.from_build_config(config)
+
+    entries = []
+
+    def url(link: Path) -> str:
+        s = str(link)
+        return "/" if s == "." else f"/{s}/"
+
+    if config.pages_dir is not None:
+        homepage = scribe.get_homepage()
+        entries.append({"url": "/", "title": homepage.title, "type": "page"})
+        for page in scribe.pages:
+            entries.append({"url": url(page.link), "title": page.title, "type": "page"})
+
+    if config.posts_dir is not None:
+        for post in reversed(scribe.posts):
+            entries.append(
+                {
+                    "url": url(post.link),
+                    "title": post.title,
+                    "type": "post",
+                    "published": post.published.date().isoformat(),
+                    "tags": post.tags,
+                }
+            )
+
+        blog = config.blog_root
+        entries.append({"url": url(blog), "title": "Blog", "type": "index"})
+        entries.append({"url": url(blog / "archive"), "title": "Blog archive", "type": "archive"})
+        entries.append({"url": url(blog / "tags"), "title": "Tags", "type": "index"})
+
+        for tag in scribe.tags:
+            tag_str = tag.replace("-", " ")
+            entries.append({"url": url(blog / "tags" / tag), "title": tag_str, "type": "tag"})
+
+        years: dict = defaultdict(list)
+        months: dict = defaultdict(list)
+        for post in scribe.posts:
+            y = post.published.strftime("%Y")
+            m = post.published.strftime("%m")
+            years[y].append(post)
+            months[(y, m)].append(post)
+
+        for y in years:
+            entries.append({"url": url(blog / y), "title": f"Archive: {y}", "type": "archive"})
+        for y, m in months:
+            month_name = datetime.strptime(m, "%m").strftime("%B")
+            entries.append(
+                {
+                    "url": url(blog / y / m),
+                    "title": f"Archive: {month_name} {y}",
+                    "type": "archive",
+                }
+            )
+
+    return entries
+
+
 def validate_post(post_data: dict[str], src_dir: Path) -> Post:
     try:
         return Post.model_validate(post_data)
@@ -352,5 +423,4 @@ def validate_page(page_data: dict[str], src_dir: Path) -> Page:
 
 
 def main():
-    scribe = TheScribe()
-    scribe.build_site()
+    TheScribe.from_env().build_site()

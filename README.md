@@ -1,7 +1,8 @@
 # beemo
 
 A Python-based static site generator. Bring your own content and templates and it'll quickly
-generate you a deployable HTML website/blog.
+generate you a deployable HTML website/blog. Also includes support for building a simple analytics
+site based on the known site structure by processing Apache logs.
 
 ![](https://raw.githubusercontent.com/bennuttall/beemo/refs/heads/main/beemo.png)
 
@@ -20,6 +21,7 @@ generate you a deployable HTML website/blog.
 - Atom feed
 - Custom Chameleon templates
 - Custom CSS, JS and other static files
+- Apache log analytics (optional, via `beemo[logs]`)
 
 ## Usage
 
@@ -34,7 +36,7 @@ an `images` directory, used within your post.
 
 ### Pages
 
-Populate your `pages` directory with your pages. Each page must be in its own directory. Post
+Populate your `pages` directory with your pages. Each page must be in its own directory. Page
 directories must contain a `meta.yml` and a content file (`index.html`, `index.md` or `index.rst`).
 
 ### Static
@@ -49,40 +51,94 @@ docs](https://chameleon.readthedocs.io/en/latest/) for reference.
 
 ## Configuration
 
-The Beemo config file is a YAML file specifying some basic config about your site build.
+The Beemo config file is a YAML file with three optional sections: `build`, `logs`, and `analytics`.
+All paths are relative to the config file.
 
-For example, here `pages_dir` and `posts_dir` are both specified, and the site will be built with
-both pages and blog posts:
+Keys shared between sections can be placed at the top level to avoid repetition — each section
+inherits the top-level value unless it defines its own.
 
-```yml
-posts_dir: content/posts
-pages_dir: content/pages
-static_dir: static
-templates_dir: templates
-blog_root: blog
-output_dir: www
-```
+### Site build
 
-If `pages_dir` is not specified, the site will be built without pages (i.e. blog only mode), e.g:
+The `build` section configures the `beemo build` command. Here `pages_dir` and `posts_dir` are
+both specified — the site will be built with both pages and blog posts:
 
 ```yml
-posts_dir: posts
-static_dir: static
-templates_dir: templates
-output_dir: www
+build:
+  posts_dir: content/posts
+  pages_dir: content/pages
+  static_dir: static
+  templates_dir: templates
+  blog_root: blog
+  output_dir: www
 ```
 
-If `posts_dir` is not specified, the site will be built without pages (i.e. pages only mode), e.g:
+Omit `pages_dir` for blog-only mode, or omit `posts_dir` for pages-only mode. Either one must
+be present. If `posts_dir` is specified, archives, tag indexes and such are generated
+automatically.
+
+### Log analytics
+
+Optional `logs` and `analytics` sections configure the `beemo logs` and `beemo analytics`
+commands. All directory paths are required — there are no hardcoded defaults.
 
 ```yml
-pages_dir: pages
-static_dir: static
-templates_dir: templates
-output_dir: www
+logs:
+  logs_dir: apache2                  # directory of gzipped Apache log files
+  pattern: "mysite.com-access*"      # glob filter for log filenames (default: *.gz)
+
+analytics:
+  output_dir: html/mysite            # output directory for the analytics site
+  base_url: https://mysite.com
+  title: ""                          # optional; derived from base_url if omitted
 ```
 
-If `posts_dir` is specified, this comes with archives, tag indexes and such which cannot currently
-be disabled.
+If `templates_dir` or `csv_dir` are shared between sections, they can be hoisted to the top
+level to avoid repetition — each section inherits the top-level value unless it defines its own:
+
+```yml
+templates_dir: templates
+csv_dir: csv
+
+build:
+  posts_dir: content/posts
+  pages_dir: content/pages
+  static_dir: static
+  blog_root: blog
+  output_dir: www
+
+logs:
+  logs_dir: apache2
+  pattern: "mysite.com-access*"
+
+analytics:
+  output_dir: analytics
+  base_url: https://mysite.com
+```
+
+The analytics output is a multi-page site:
+
+```
+output_dir/
+├── index.html          ← last 30 days summary
+└── 2026/
+    ├── index.html      ← full year
+    ├── 03/
+    │   └── index.html  ← March 2026
+    └── 04/
+        └── index.html  ← April 2026
+```
+
+The analytics template (`analytics.pt`) must be placed in your site's `templates_dir` alongside
+your other Chameleon templates. It receives the following template variables:
+
+| Variable   | Description |
+|------------|-------------|
+| `report`   | Analytics data dict (totals, hits by day/month, pages, UAs, referrers) |
+| `nav`      | Navigation context (breadcrumbs, year/month links, current page) |
+| `json`     | Python's `json` module, for serialising chart data |
+| `datetime` | Python's `datetime` class, for formatting ISO date strings |
+
+Dates in `report` are ISO strings (`2026-03-01`) so templates can format them as needed.
 
 ### Environment variables
 
@@ -101,17 +157,45 @@ Install the latest release with:
 pip install beemo
 ```
 
+For Apache log analytics, install the `logs` extra:
+
+```
+pip install beemo[logs]
+```
+
 ### Development
 
 Create a virtual environment and run `make develop` to install the library and its dependencies.
 
+### Build
+
+Build your site by running the command `beemo build` with the environment variable `BEEMO_CONFIG`
+set pointing at a valid config file. It will build your site into your configured `output_dir`.
+
 This can be served locally with e.g. `python -m http.server -d www` and viewed at e.g.
 `http://localhost:8000`.
 
-### Build
+### Log analytics
 
-Build your site by running the command `beemo` with the environment variable `BEEMO_CONFIG` set
-pointing at a valid config file. It will build your site into your configured `output_dir`.
+With `beemo[logs]` installed and `logs`/`analytics` sections in your config, run the full pipeline:
+
+```bash
+beemo logs       # process Apache gz logs → CSV files
+beemo analytics  # generate HTML analytics site
+```
+
+Both subcommands read their defaults from `BEEMO_CONFIG`. Any setting can be overridden on
+the command line — run with `--help` for details.
+
+Process your Apache logs with `beemo logs` and build your analytics site with `beemo analytics` with
+the environment variable `BEEMO_CONFIG` set pointing at a valid config file. It will build your
+analytics site into your configured `output_dir`.
+
+This can be served locally with e.g. `python -m http.server -d analytics` and viewed at e.g.
+`http://localhost:8000`.
+
+`beemo analytics` is incremental: year and month pages are skipped if their output file is newer
+than all source CSVs. The summary page (last 30 days) always regenerates.
 
 ## Examples
 
