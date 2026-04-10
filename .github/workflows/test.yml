@@ -27,3 +27,6 @@ jobs:
 
       - name: Build the project
         run: make build
+
+      - name: Build the docs
+        run: make docs
