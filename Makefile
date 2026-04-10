@@ -28,3 +28,5 @@ docs:
 
 docs-serve: docs
 	$(POETRY) run python -m http.server -d $(HTML_DOCS)
+
+.PHONY: develop lint format build release docs docs-serve
