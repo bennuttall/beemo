@@ -14,7 +14,7 @@ dependencies = [
     "markdown (>=3.8.2,<4.0.0)",
     "pydantic-settings (>=2.10.1,<3.0.0)",
     "beautifulsoup4 (>=4.13.4,<5.0.0)",
-    "docutils (>=0.22,<0.23)",
+    "docutils (>=0.21,<0.23)",
     "typer (>=0.15.0)",
 ]
 
@@ -38,6 +38,8 @@ Issues = "https://github.com/bennuttall/beemo/issues"
 [tool.poetry.group.dev.dependencies]
 black = "^25.1.0"
 isort = "^6.0.1"
+sphinx = ">=7.0"
+sphinx-rtd-theme = ">=3.0"
 
 [project.scripts]
 beemo = "beemo.cli:main"

@@ -1,6 +1,6 @@
 PIP := pip
 POETRY := poetry
-
+HTML_DOCS := docs/_build/html
 
 develop:
 	$(PIP) install -U pip
@@ -22,3 +22,9 @@ build:
 
 release: build
 	$(POETRY) publish
+
+docs:
+	$(POETRY) run sphinx-build -b html docs $(HTML_DOCS)
+
+docs-serve: docs
+	$(POETRY) run python -m http.server -d $(HTML_DOCS)
