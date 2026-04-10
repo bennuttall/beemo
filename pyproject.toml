@@ -22,6 +22,16 @@ license = "BSD-3-Clause"
 license-files = ["LICENSE.txt"]
 classifiers = [
     "Development Status :: 4 - Beta",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3 :: Only",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
+    "Programming Language :: Python :: 3.14",
+    "Intended Audience :: Developers",
+    "Topic :: Utilities",
+    "Topic :: Internet",
 ]
 readme = "README.md"
 
@@ -32,7 +42,8 @@ logs = [
 ]
 
 [project.urls]
-Source = "https://github.com/bennuttall/beemo"
+Repository = "https://github.com/bennuttall/beemo"
+Documentation = "https://beemo.readthedocs.io/"
 Issues = "https://github.com/bennuttall/beemo/issues"
 
 [tool.poetry.group.dev.dependencies]
