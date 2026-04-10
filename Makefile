@@ -1,20 +1,24 @@
+PIP := pip
+POETRY := poetry
+
+
 develop:
-	pip install -U pip
-	pip install "poetry>2"
-	poetry install --all-extras --with dev
-	poetry run beemo --install-completion
+	$(PIP) install -U pip
+	$(PIP) install "poetry>2"
+	$(POETRY) install --all-extras --with dev
+	$(POETRY) run beemo --install-completion
 
 lint:
-	isort . --check-only
-	black . --check
+	$(POETRY) run isort . --check-only
+	$(POETRY) run black . --check
 
 format:
-	isort .
-	black .
+	$(POETRY) run isort .
+	$(POETRY) run black .
 
 build:
 	rm -rf dist
-	poetry build
+	$(POETRY) build
 
 release: build
-	twine upload dist/*
+	$(POETRY) publish
