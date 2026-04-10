@@ -26,7 +26,7 @@ def get_excerpt(text: str, limit: int = 300) -> str:
     return truncate_words(text, limit=limit)
 
 
-def prev_current_next(iterable):
+def next_current_prev(iterable):
     a, b, c = tee(iterable, 3)
     prevs = chain([None], a)
     items = b

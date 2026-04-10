@@ -12,7 +12,7 @@ from structlog import get_logger
 
 from .post_types import Page, Post
 from .settings import get_config
-from .utils import markdown_to_html, prev_current_next, rst_to_html
+from .utils import markdown_to_html, next_current_prev, rst_to_html
 
 
 logger = get_logger()
@@ -28,7 +28,7 @@ class TheScribe:
             default_extension=".pt",
         )
         self.pages = list(self.iter_pages())
-        self.posts = sorted(self.iter_posts(), key=lambda p: p.published)
+        self.posts = sorted(self.iter_posts(), key=lambda p: p.published, reverse=True)
         self.tags = self.get_tags()
 
     @classmethod
@@ -104,7 +104,7 @@ class TheScribe:
 
     def get_tags(self) -> dict[str, list[Post]]:
         tags = defaultdict(list)
-        for post in reversed(self.posts):
+        for post in self.posts:
             for tag in post.tags:
                 tags[tag].append(post)
         return dict(sorted(tags.items(), key=lambda item: len(item[1]), reverse=True))
@@ -117,7 +117,7 @@ class TheScribe:
     def get_archive(self) -> dict[int, list[Post]]:
         archive = defaultdict(list)
 
-        for post in reversed(self.posts):
+        for post in self.posts:
             year = post.published.year
             archive[year].append(post)
 
@@ -129,7 +129,7 @@ class TheScribe:
         html = self.templates["home"](
             layout=self.templates["layout"]["layout"],
             page=homepage,
-            posts=reversed(self.posts[-5:]),
+            posts=self.posts,
             now=self.now,
         )
         output_path = self.output_path / "index.html"
@@ -144,6 +144,7 @@ class TheScribe:
             html = self.templates["page"](
                 layout=self.templates["layout"]["layout"],
                 page=page,
+                posts=self.posts,
                 now=self.now,
             )
             html_path = page.output_path / "index.html"
@@ -158,7 +159,7 @@ class TheScribe:
 
     def write_posts(self):
         logger.info("Writing posts", len=len(self.posts))
-        for prev_post, post, next_post in prev_current_next(self.posts):
+        for next_post, post, prev_post in next_current_prev(self.posts):
             logger.info("Writing post", output_path=str(post.output_path))
             post.output_path.mkdir(parents=True, exist_ok=True)
             html = self.templates["post"](
@@ -166,6 +167,7 @@ class TheScribe:
                 post=post,
                 prev_post=prev_post,
                 next_post=next_post,
+                posts=self.posts,
                 now=self.now,
             )
             html_path = post.output_path / "index.html"
@@ -181,11 +183,13 @@ class TheScribe:
     def write_blog_index(self):
         link = self.config.blog_root
         logger.info("Writing blog index", link=str(link))
-        html = self.templates["posts"](
+        blog_template = self.config.templates_dir / "blog.pt"
+        template = "blog" if blog_template.exists() else "posts"
+        html = self.templates[template](
             layout=self.templates["layout"]["layout"],
             title="Blog",
             link=link,
-            posts=reversed(self.posts),
+            posts=self.posts,
             now=self.now,
         )
         output_path = self.output_path / link / "index.html"
@@ -205,7 +209,8 @@ class TheScribe:
                 layout=self.templates["layout"]["layout"],
                 title=f"Archive: {year}",
                 link=link,
-                posts=reversed(posts),
+                posts=posts,
+                all_posts=self.posts,
                 now=self.now,
             )
             output_path = self.output_path / link / "index.html"
@@ -229,7 +234,8 @@ class TheScribe:
                 layout=self.templates["layout"]["layout"],
                 title=f"Archive: {month_name} {year}",
                 link=link,
-                posts=reversed(posts),
+                posts=posts,
+                all_posts=self.posts,
                 now=self.now,
             )
             output_path = self.output_path / link / "index.html"
@@ -244,6 +250,7 @@ class TheScribe:
             title="Tags",
             link=link,
             tags=self.tags,
+            posts=self.posts,
             now=self.now,
         )
         output_path = self.output_path / link / "index.html"
@@ -261,6 +268,7 @@ class TheScribe:
                 title=f"Tag: {tag_str}",
                 link=link,
                 posts=posts,
+                all_posts=self.posts,
                 now=self.now,
             )
             output_path = self.output_path / link / "index.html"
@@ -276,6 +284,7 @@ class TheScribe:
             title="Blog archive",
             link=link,
             archive=archive,
+            posts=self.posts,
             now=self.now,
         )
         output_path = self.output_path / link / "index.html"
@@ -302,7 +311,7 @@ class TheScribe:
         logger.info("Writing Atom feed")
         html = self.templates["atom"](
             title="Blog",
-            posts=reversed(self.posts[-10:]),
+            posts=self.posts[:10],
             now=self.now,
         )
         output_path = self.output_path / self.config.blog_root / "atom.xml"
@@ -318,7 +327,7 @@ class TheScribe:
                     "link": str(post.link),
                     "published": post.published.isoformat(),
                 }
-                for post in reversed(self.posts)
+                for post in self.posts
             ],
         }
         output_path = self.output_path / "posts.json"

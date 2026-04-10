@@ -1,6 +1,6 @@
 [project]
 name = "beemo"
-version = "0.4.0"
+version = "0.5.0"
 description = "A Python-based static site generator. Bring your own content and templates and it'll quickly generate you a deployable HTML website/blog."
 authors = [
     {name = "Ben Nuttall", email = "ben@bennuttall.com"}
@@ -14,7 +14,7 @@ dependencies = [
     "markdown (>=3.8.2,<4.0.0)",
     "pydantic-settings (>=2.10.1,<3.0.0)",
     "beautifulsoup4 (>=4.13.4,<5.0.0)",
-    "docutils (>=0.22,<0.23)",
+    "docutils (>=0.21,<0.23)",
     "typer (>=0.15.0)",
 ]
 
@@ -22,6 +22,16 @@ license = "BSD-3-Clause"
 license-files = ["LICENSE.txt"]
 classifiers = [
     "Development Status :: 4 - Beta",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3 :: Only",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
+    "Programming Language :: Python :: 3.14",
+    "Intended Audience :: Developers",
+    "Topic :: Utilities",
+    "Topic :: Internet",
 ]
 readme = "README.md"
 
@@ -32,13 +42,15 @@ logs = [
 ]
 
 [project.urls]
-Source = "https://github.com/bennuttall/beemo"
+Repository = "https://github.com/bennuttall/beemo"
+Documentation = "https://beemo.readthedocs.io/"
 Issues = "https://github.com/bennuttall/beemo/issues"
 
 [tool.poetry.group.dev.dependencies]
 black = "^25.1.0"
 isort = "^6.0.1"
-twine = "^6.1.0"
+sphinx = ">=7.0"
+sphinx-rtd-theme = ">=3.0"
 
 [project.scripts]
 beemo = "beemo.cli:main"

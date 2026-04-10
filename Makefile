@@ -1,15 +1,32 @@
+PIP := pip
+POETRY := poetry
+HTML_DOCS := docs/_build/html
+
 develop:
-	pip install "poetry>2"
-	poetry install --all-extras --with dev
-	beemo --install-completion
+	$(PIP) install -U pip
+	$(PIP) install "poetry>2"
+	$(POETRY) install --all-extras --with dev
+	$(POETRY) run beemo --install-completion
+
+lint:
+	$(POETRY) run isort . --check-only
+	$(POETRY) run black . --check
 
 format:
-	isort .
-	black .
+	$(POETRY) run isort .
+	$(POETRY) run black .
 
 build:
 	rm -rf dist
-	poetry build
+	$(POETRY) build
 
 release: build
-	twine upload dist/*
+	$(POETRY) publish
+
+docs:
+	$(POETRY) run sphinx-build -b html docs $(HTML_DOCS)
+
+docs-serve: docs
+	$(POETRY) run python -m http.server -d $(HTML_DOCS)
+
+.PHONY: develop lint format build release docs docs-serve

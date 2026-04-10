@@ -24,6 +24,8 @@ class PostType(BaseModel):
     images: list[Path] = []
     link: Path | None = None
     full_width: bool = False
+    cover_image: str | None = None
+    author: str | None = None
 
     @model_validator(mode="after")
     def set_text(self):
