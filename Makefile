@@ -21,7 +21,7 @@ build:
 	$(POETRY) build
 
 release: build
-	$(POETRY) publish
+	$(POETRY) run twine upload dist/*
 
 docs:
 	$(POETRY) run sphinx-build -b html docs $(HTML_DOCS)
@@ -29,4 +29,7 @@ docs:
 docs-serve: docs
 	$(POETRY) run python -m http.server -d $(HTML_DOCS)
 
-.PHONY: develop lint format build release docs docs-serve
+freeze-rtd-requirements:
+	$(POETRY) run pip freeze | grep -i sphinx >> rtd_requirements.txt
+
+.PHONY: develop lint format build release docs docs-serve freeze-rtd-requirements
