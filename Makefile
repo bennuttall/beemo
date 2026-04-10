@@ -1,7 +1,12 @@
 develop:
+	pip install -U pip
 	pip install "poetry>2"
 	poetry install --all-extras --with dev
-	beemo --install-completion
+	poetry run beemo --install-completion
+
+lint:
+	isort . --check-only
+	black . --check
 
 format:
 	isort .
