@@ -30,6 +30,7 @@ docs-serve: docs
 	$(POETRY) run python -m http.server -d $(HTML_DOCS)
 
 freeze-rtd-requirements:
+	echo "." > rtd_requirements.txt
 	$(POETRY) run pip freeze | grep -i sphinx >> rtd_requirements.txt
 
 .PHONY: develop lint format build release docs docs-serve freeze-rtd-requirements
