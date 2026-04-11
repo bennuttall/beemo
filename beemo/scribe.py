@@ -38,10 +38,6 @@ class TheScribe:
             raise ValueError("No [build] section in config")
         return cls(config.build)
 
-    @classmethod
-    def from_build_config(cls, config) -> "TheScribe":
-        return cls(config)
-
     def setup_output_path(self):
         logger.info("Setting up output path", output_path=str(self.output_path))
         shutil.rmtree(self.output_path, ignore_errors=True)
@@ -355,7 +351,7 @@ class TheScribe:
 
 def build_manifest_entries(config) -> list[dict]:
     """Generate manifest entries from site content without writing to disk."""
-    scribe = TheScribe.from_build_config(config)
+    scribe = TheScribe(config)
 
     entries = []
 
