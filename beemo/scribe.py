@@ -103,7 +103,8 @@ class TheScribe:
         for post in self.posts:
             for tag in post.tags:
                 tags[tag].append(post)
-        return dict(sorted(tags.items(), key=lambda item: len(item[1]), reverse=True))
+        # Sort tags by number of posts (descending) and then alphabetically
+        return dict(sorted(tags.items(), key=lambda item: (-len(item[1]), item[0])))
 
     def get_homepage(self) -> Page:
         homepage_dir = self.config.pages_dir / "home"
