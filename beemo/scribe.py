@@ -366,7 +366,7 @@ def build_manifest_entries(config) -> list[dict]:
             entries.append({"url": url(page.link), "title": page.title, "type": "page"})
 
     if config.posts_dir is not None:
-        for post in reversed(scribe.posts):
+        for post in scribe.posts:
             entries.append(
                 {
                     "url": url(post.link),
