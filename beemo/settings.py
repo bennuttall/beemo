@@ -2,7 +2,7 @@ from functools import cache
 from pathlib import Path
 
 import yaml
-from pydantic import BaseModel, FilePath, model_validator
+from pydantic import BaseModel, FilePath, field_validator, model_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
@@ -19,12 +19,19 @@ class BuildConfig(BaseModel):
     templates_dir: Path
     output_dir: Path
     blog_root: Path = Path()
+    base_url: str | None = None
 
     @model_validator(mode="after")
     def posts_or_pages_required(self):
         if self.posts_dir is None and self.pages_dir is None:
             raise ValueError("build: either posts_dir or pages_dir must be set")
         return self
+
+    @field_validator("base_url")
+    def validate_base_url(cls, v: str | None):
+        if v is not None and v.endswith("/"):
+            return v.remove_suffix("/")
+        return v
 
 
 class LogsConfig(BaseModel):
