@@ -125,9 +125,8 @@ class TheScribe:
         homepage = self.get_homepage()
         html = self.templates["home"](
             layout=self.templates["layout"]["layout"],
+            scribe=self,
             page=homepage,
-            posts=self.posts,
-            now=self.now,
         )
         output_path = self.output_path / "index.html"
         output_path.parent.mkdir(parents=True, exist_ok=True)
@@ -140,9 +139,8 @@ class TheScribe:
             page.output_path.mkdir(parents=True, exist_ok=True)
             html = self.templates["page"](
                 layout=self.templates["layout"]["layout"],
+                scribe=self,
                 page=page,
-                posts=self.posts,
-                now=self.now,
             )
             html_path = page.output_path / "index.html"
             html_path.write_text(html)
@@ -161,11 +159,10 @@ class TheScribe:
             post.output_path.mkdir(parents=True, exist_ok=True)
             html = self.templates["post"](
                 layout=self.templates["layout"]["layout"],
+                scribe=self,
                 post=post,
                 prev_post=prev_post,
                 next_post=next_post,
-                posts=self.posts,
-                now=self.now,
             )
             html_path = post.output_path / "index.html"
             html_path.write_text(html)
@@ -184,10 +181,9 @@ class TheScribe:
         template = "blog" if blog_template.exists() else "posts"
         html = self.templates[template](
             layout=self.templates["layout"]["layout"],
+            scribe=self,
             title="Blog",
             link=link,
-            posts=self.posts,
-            now=self.now,
         )
         output_path = self.output_path / link / "index.html"
         output_path.parent.mkdir(parents=True, exist_ok=True)
@@ -204,11 +200,10 @@ class TheScribe:
             logger.info("Writing year index", year=year, post_count=len(posts), link=str(link))
             html = self.templates["posts"](
                 layout=self.templates["layout"]["layout"],
+                scribe=self,
                 title=f"Archive: {year}",
                 link=link,
                 posts=posts,
-                all_posts=self.posts,
-                now=self.now,
             )
             output_path = self.output_path / link / "index.html"
             output_path.parent.mkdir(parents=True, exist_ok=True)
@@ -229,11 +224,10 @@ class TheScribe:
             )
             html = self.templates["posts"](
                 layout=self.templates["layout"]["layout"],
+                scribe=self,
                 title=f"Archive: {month_name} {year}",
                 link=link,
                 posts=posts,
-                all_posts=self.posts,
-                now=self.now,
             )
             output_path = self.output_path / link / "index.html"
             output_path.parent.mkdir(parents=True, exist_ok=True)
@@ -246,9 +240,7 @@ class TheScribe:
             layout=self.templates["layout"]["layout"],
             title="Tags",
             link=link,
-            tags=self.tags,
-            posts=self.posts,
-            now=self.now,
+            scribe=self,
         )
         output_path = self.output_path / link / "index.html"
         output_path.parent.mkdir(parents=True, exist_ok=True)
@@ -262,11 +254,10 @@ class TheScribe:
             tag_str = tag.replace("-", " ")
             html = self.templates["posts"](
                 layout=self.templates["layout"]["layout"],
+                scribe=self,
+                posts=posts,
                 title=f"Tag: {tag_str}",
                 link=link,
-                posts=posts,
-                all_posts=self.posts,
-                now=self.now,
             )
             output_path = self.output_path / link / "index.html"
             output_path.parent.mkdir(parents=True, exist_ok=True)
@@ -275,14 +266,11 @@ class TheScribe:
     def write_archive_page(self):
         link = self.config.blog_root / "archive"
         logger.info("Writing archive page")
-        archive = self.get_archive()
         html = self.templates["archive"](
             layout=self.templates["layout"]["layout"],
+            scribe=self,
             title="Blog archive",
             link=link,
-            archive=archive,
-            posts=self.posts,
-            now=self.now,
         )
         output_path = self.output_path / link / "index.html"
         output_path.parent.mkdir(parents=True, exist_ok=True)
@@ -293,24 +281,17 @@ class TheScribe:
         years = {post.published.year for post in self.posts}
         months = {(post.published.year, post.published.strftime("%m")) for post in self.posts}
         html = self.templates["sitemap"](
-            pages=[page for page in self.pages if page.slug != "404"],
-            posts=self.posts,
-            tags=list(self.tags),
+            scribe=self,
             years=years,
             months=months,
-            now=self.now,
         )
         output_path = self.output_path / "sitemap.xml"
         output_path.parent.mkdir(parents=True, exist_ok=True)
         output_path.write_text(html)
 
     def write_atom_feed(self):
-        logger.info("Writing Atom feed")
-        html = self.templates["atom"](
-            title="Blog",
-            posts=self.posts[:10],
-            now=self.now,
-        )
+        logger.info("Writing atom feed")
+        html = self.templates["atom"](scribe=self)
         output_path = self.output_path / self.config.blog_root / "atom.xml"
         output_path.parent.mkdir(parents=True, exist_ok=True)
         output_path.write_text(html)
