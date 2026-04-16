@@ -27,6 +27,7 @@ class PostType(BaseModel):
     cover_image: str | None = None
     og_image: str | None = None
     author: str | None = None
+    template: str | None = None
 
     @model_validator(mode="after")
     def set_text(self):
@@ -44,6 +45,16 @@ class PostType(BaseModel):
     def set_description(self):
         if not self.description:
             self.description = self.excerpt
+        return self
+
+    @model_validator(mode="after")
+    def validate_template(self):
+        if self.template is not None:
+            if self.template.endswith(".pt"):
+                raise ValueError(f"Template should not include extension: {self.template}")
+            template_path = settings.templates_dir / f"{self.template}.pt"
+            if not template_path.is_file():
+                raise ValueError(f"Template not found: {self.template}")
         return self
 
     @property

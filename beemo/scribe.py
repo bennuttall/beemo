@@ -129,9 +129,10 @@ class TheScribe:
     def write_pages(self):
         logger.info("Writing pages", len=len(self.pages))
         for page in self.pages:
-            logger.info("Writing page", output_path=str(page.output_path))
+            template = page.template or "page"
+            logger.info("Writing page", output_path=str(page.output_path), template=template)
             page.output_path.mkdir(parents=True, exist_ok=True)
-            html = self.templates["page"](
+            html = self.templates[template](
                 layout=self.templates["layout"]["layout"],
                 scribe=self,
                 page=page,
@@ -150,9 +151,10 @@ class TheScribe:
     def write_posts(self):
         logger.info("Writing posts", len=len(self.posts))
         for next_post, post, prev_post in next_current_prev(self.posts):
-            logger.info("Writing post", output_path=str(post.output_path))
+            template = post.template or "post"
+            logger.info("Writing post", output_path=str(post.output_path), template=template)
             post.output_path.mkdir(parents=True, exist_ok=True)
-            html = self.templates["post"](
+            html = self.templates[template](
                 layout=self.templates["layout"]["layout"],
                 scribe=self,
                 post=post,
