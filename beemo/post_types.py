@@ -25,6 +25,7 @@ class PostType(BaseModel):
     link: Path | None = None
     full_width: bool = False
     cover_image: str | None = None
+    og_image: str | None = None
     author: str | None = None
 
     @model_validator(mode="after")
