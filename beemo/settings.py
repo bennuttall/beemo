@@ -44,6 +44,7 @@ class AnalyticsConfig(BaseModel):
     csv_dir: Path
     output_dir: Path
     templates_dir: Path
+    manifest_path: Path | None = None
     base_url: str = ""
     title: str = ""
 
@@ -72,6 +73,11 @@ class Config(BaseModel):
                 p = getattr(self.analytics, attr)
                 if not p.is_absolute():
                     setattr(self.analytics, attr, root / p)
+            if (
+                self.analytics.manifest_path is not None
+                and not self.analytics.manifest_path.is_absolute()
+            ):
+                self.analytics.manifest_path = root / self.analytics.manifest_path
         return self
 
 
