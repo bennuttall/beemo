@@ -63,9 +63,9 @@ Example layout:
    * - ``og_image``
      - No
      - Filename of Open Graph image (from ``images/``)
-   * - ``full_width``
+   * - ``template``
      - No
-     - Boolean; enables full-width layout (default: ``false``)
+     - Custom template name to use instead of ``post`` (without ``.pt`` extension)
 
 Example ``meta.yml`` for a post:
 
@@ -126,9 +126,9 @@ Example layout:
    * - ``og_image``
      - No
      - Filename of Open Graph image (from ``images/``)
-   * - ``full_width``
+   * - ``template``
      - No
-     - Boolean; enables full-width layout (default: ``false``)
+     - Custom template name to use instead of ``page`` (without ``.pt`` extension)
 
 Example ``meta.yml`` for a page:
 

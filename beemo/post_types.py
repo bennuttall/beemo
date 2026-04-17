@@ -14,20 +14,22 @@ settings = get_config().build
 class PostType(BaseModel):
     model_config = ConfigDict(extra="allow")
 
+    # given fields
     post_type: str
     slug: str | None = None
     title: str
     description: str | None = None
-    text: str | None = None
     html: str
-    excerpt: str | None = None
-    images: list[Path] = []
-    link: Path | None = None
-    full_width: bool = False
-    cover_image: str | None = None
     og_image: str | None = None
-    author: str | None = None
     template: str | None = None
+    cover_image: str | None = None
+    author: str | None = None
+    images: list[Path] = []
+
+    # calculated fields
+    text: str | None = None
+    excerpt: str | None = None
+    link: Path | None = None
 
     @model_validator(mode="after")
     def set_text(self):
@@ -75,12 +77,16 @@ class Page(PostType):
 
 
 class Post(PostType):
-    post_type: str = "post"
+    # given fields
     slug: str
     published: datetime
     modified: datetime | None = None
-    modified_diff: bool = False
     tags: list[str] = []
+
+    # calculated fields
+    post_type: str = "post"
+    modified_diff: bool = False
+    link: Path | None = None
 
     @model_validator(mode="after")
     def set_timezone(self):

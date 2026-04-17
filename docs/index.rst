@@ -73,8 +73,8 @@ Table of Contents
 
    getting-started
    content
-   output
-   config
    templates
+   config
+   output
    analytics
    cli/index

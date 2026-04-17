@@ -62,7 +62,8 @@ page
 
 **File:** ``page.pt``
 
-**Used for:** each individual page (one per page in ``pages_dir``).
+**Used for:** each individual page (one per page in ``pages_dir``). A page can override this with
+a ``template`` field in its ``meta.yml``.
 
 .. list-table::
    :header-rows: 1
@@ -81,7 +82,8 @@ post
 
 **File:** ``post.pt``
 
-**Used for:** each individual blog post.
+**Used for:** each individual blog post. A post can override this with a ``template`` field in its
+``meta.yml``.
 
 .. list-table::
    :header-rows: 1
@@ -255,8 +257,6 @@ Both ``Page`` and ``Post`` share the following attributes:
      - Optional Open Graph image filename
    * - ``author``
      - Optional author name
-   * - ``full_width``
-     - Boolean flag for full-width layout
 
 ``Post`` has these additional attributes:
 
