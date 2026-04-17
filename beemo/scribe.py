@@ -12,38 +12,44 @@ from structlog import get_logger
 
 from .post_types import HomePage, Page, Post
 from .settings import BuildConfig, get_config
+from .site_data import SiteData
 from .utils import markdown_to_html, next_current_prev, rst_to_html
 
 
 logger = get_logger()
 
 
-class SiteData:
-    def __init__(self, scribe: "TheScribe"):
-        self.config: BuildConfig = scribe.config
-        self.pages: list[Page] = scribe.pages
-        self.posts: list[Post] = scribe.posts
-        self.archive: dict[int, list[Post]] = scribe.archive
-        self.tags: dict[str, list[Post]] = scribe.tags
-        self.now: datetime = scribe.now
-
-
 class TheScribe:
-    def __init__(self):
+    def __init__(self, config: BuildConfig | None = None):
         self.now = datetime.now(timezone.utc)
-        self.config = get_config().build
+        if config is None:
+            self.config = get_config().build
+        else:
+            self.config = config
         self.output_path = self.config.output_dir
         self.templates = PageTemplateLoader(
             search_path=[self.config.templates_dir],
             default_extension=".pt",
         )
+        self.homepage = self.get_homepage()
         self.pages = list(self.iter_pages())
         self.posts = sorted(self.iter_posts(), key=lambda p: p.published, reverse=True)
         self.archive = self.get_archive()
         self.tags = self.get_tags()
-        self.site_data = SiteData(self)
+        self.site_data = SiteData(
+            config=self.config,
+            homepage=self.homepage,
+            pages=self.pages,
+            posts=self.posts,
+            archive=self.archive,
+            tags=self.tags,
+            now=self.now,
+        )
 
     def setup_output_path(self):
+        """
+        Copy all files from static_dir into the output directory.
+        """
         logger.info("Setting up output path", output_path=str(self.output_path))
         shutil.rmtree(self.output_path, ignore_errors=True)
         self.output_path.mkdir(parents=True, exist_ok=True)
@@ -62,6 +68,9 @@ class TheScribe:
                 shutil.copy2(source_path, destination_path)
 
     def iter_pages(self) -> Generator[Page, None, None]:
+        """
+        Yield all pages from pages_dir, excluding the home directory.
+        """
         if not self.config.pages_dir:
             return
         for page_dir in self.config.pages_dir.iterdir():
@@ -70,6 +79,9 @@ class TheScribe:
                 yield validate_page(page_data, src_dir=page_dir)
 
     def iter_posts(self) -> Generator[Post, None, None]:
+        """
+        Yield all posts found recursively under posts_dir.
+        """
         if not self.config.posts_dir:
             return
         for meta_file in self.config.posts_dir.rglob("meta.yml"):
@@ -78,6 +90,9 @@ class TheScribe:
             yield validate_post(post_data, src_dir=post_dir)
 
     def parse_content(self, src_dir: Path) -> dict[str]:
+        """
+        Read meta.yml, content file, and images from a content directory.
+        """
         metadata_file = src_dir / "meta.yml"
         images_dir = src_dir / "images"
         html_file = src_dir / "index.html"
@@ -104,6 +119,9 @@ class TheScribe:
         return {"html": html, "images": images, "slug": src_dir.name, **metadata}
 
     def get_tags(self) -> dict[str, list[Post]]:
+        """
+        Return a dict mapping tag name to posts, sorted by post count then alphabetically.
+        """
         tags = defaultdict(list)
         for post in self.posts:
             for tag in post.tags:
@@ -112,11 +130,17 @@ class TheScribe:
         return dict(sorted(tags.items(), key=lambda item: (-len(item[1]), item[0])))
 
     def get_homepage(self) -> HomePage:
+        """
+        Parse and validate the homepage.
+        """
         homepage_dir = self.config.pages_dir / "home"
         page_data = self.parse_content(homepage_dir)
         return validate_homepage(page_data, src_dir=homepage_dir)
 
     def get_archive(self) -> dict[int, list[Post]]:
+        """
+        Return a dict mapping year to list of posts published that year.
+        """
         archive = defaultdict(list)
 
         for post in self.posts:
@@ -127,7 +151,7 @@ class TheScribe:
 
     def write_homepage(self):
         """
-        Render and write index.html using the home template.
+        Render and write the homepage using the home template.
         """
         logger.info("Writing homepage")
         homepage = self.get_homepage()
@@ -142,6 +166,9 @@ class TheScribe:
         output_path.write_text(html)
 
     def write_pages(self):
+        """
+        Render and write an index.html for each page in pages_dir.
+        """
         logger.info("Writing pages", len=len(self.pages))
         for page in self.pages:
             template = page.template or "page"
@@ -164,6 +191,9 @@ class TheScribe:
                     logger.info("Copied image", path=str(img_dest))
 
     def write_posts(self):
+        """
+        Render and write an index.html for each post.
+        """
         logger.info("Writing posts", len=len(self.posts))
         for next_post, post, prev_post in next_current_prev(self.posts):
             template = post.template or "post"
@@ -208,6 +238,9 @@ class TheScribe:
         output_path.write_text(html)
 
     def write_year_indexes(self):
+        """
+        Render and write a posts index page for each year that has posts.
+        """
         logger.info("Writing year indexes")
         years = defaultdict(list)
         for post in self.posts:
@@ -230,6 +263,9 @@ class TheScribe:
             output_path.write_text(html)
 
     def write_month_indexes(self):
+        """
+        Render and write a posts index page for each month that has posts.
+        """
         logger.info("Writing month indexes")
         months = defaultdict(list)
         for post in self.posts:
@@ -274,6 +310,9 @@ class TheScribe:
         output_path.write_text(html)
 
     def write_tag_pages(self):
+        """
+        Render and write a posts index page for each tag.
+        """
         logger.info("Writing tag pages", len=len(self.tags))
         for tag, posts in self.tags.items():
             link = self.config.blog_root / "tags" / tag
@@ -343,6 +382,9 @@ class TheScribe:
         output_path.write_text(html)
 
     def write_json(self):
+        """
+        Write posts.json containing title, link, and published date for all posts.
+        """
         logger.info("Writing json")
         data = {
             "posts": [
@@ -358,6 +400,10 @@ class TheScribe:
         output_path.write_text(json.dumps(data, indent=4))
 
     def get_manifest_entries(self) -> list[dict]:
+        """
+        Return a list of manifest entries for all pages, posts, and index pages, for use by beemo
+        analytics.
+        """
         entries = []
 
         def url(link: Path) -> str:
@@ -416,11 +462,17 @@ class TheScribe:
         return entries
 
     def write_manifest(self):
+        """
+        Write manifest.json for use by beemo analytics.
+        """
         logger.info("Writing manifest")
         output_path = self.output_path / "manifest.json"
         output_path.write_text(json.dumps(self.get_manifest_entries(), indent=4))
 
     def build_site(self):
+        """
+        Run the full site build.
+        """
         logger.info("Starting build process", output_dir=str(self.output_path))
 
         self.setup_output_path()
@@ -470,4 +522,4 @@ def validate_homepage(page_data: dict[str], src_dir: Path) -> HomePage:
 
 
 def main():
-    TheScribe.build_site()
+    TheScribe().build_site()
