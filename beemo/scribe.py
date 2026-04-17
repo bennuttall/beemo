@@ -11,17 +11,27 @@ from chameleon import PageTemplateLoader
 from structlog import get_logger
 
 from .post_types import HomePage, Page, Post
-from .settings import get_config
+from .settings import BuildConfig, get_config
 from .utils import markdown_to_html, next_current_prev, rst_to_html
 
 
 logger = get_logger()
 
 
+class SiteData:
+    def __init__(self, scribe: "TheScribe"):
+        self.config: BuildConfig = scribe.config
+        self.pages: list[Page] = scribe.pages
+        self.posts: list[Post] = scribe.posts
+        self.archive: dict[int, list[Post]] = scribe.archive
+        self.tags: dict[str, list[Post]] = scribe.tags
+        self.now: datetime = scribe.now
+
+
 class TheScribe:
     def __init__(self):
-        self.config = get_config().build
         self.now = datetime.now(timezone.utc)
+        self.config = get_config().build
         self.output_path = self.config.output_dir
         self.templates = PageTemplateLoader(
             search_path=[self.config.templates_dir],
@@ -29,7 +39,9 @@ class TheScribe:
         )
         self.pages = list(self.iter_pages())
         self.posts = sorted(self.iter_posts(), key=lambda p: p.published, reverse=True)
+        self.archive = self.get_archive()
         self.tags = self.get_tags()
+        self.site_data = SiteData(self)
 
     def setup_output_path(self):
         logger.info("Setting up output path", output_path=str(self.output_path))
@@ -114,11 +126,14 @@ class TheScribe:
         return dict(archive)
 
     def write_homepage(self):
+        """
+        Render and write index.html using the home template.
+        """
         logger.info("Writing homepage")
         homepage = self.get_homepage()
         html = self.templates["home"](
             layout=self.templates["layout"]["layout"],
-            scribe=self,
+            site=self.site_data,
             page=homepage,
             post=None,
         )
@@ -134,7 +149,7 @@ class TheScribe:
             page.output_path.mkdir(parents=True, exist_ok=True)
             html = self.templates[template](
                 layout=self.templates["layout"]["layout"],
-                scribe=self,
+                site=self.site_data,
                 page=page,
                 post=None,
             )
@@ -156,7 +171,7 @@ class TheScribe:
             post.output_path.mkdir(parents=True, exist_ok=True)
             html = self.templates[template](
                 layout=self.templates["layout"]["layout"],
-                scribe=self,
+                site=self.site_data,
                 post=post,
                 prev_post=prev_post,
                 next_post=next_post,
@@ -173,13 +188,16 @@ class TheScribe:
                     logger.info("Copied image", path=str(img_dest))
 
     def write_blog_index(self):
+        """
+        Render and write the blog index page using blog.pt or posts.pt.
+        """
         link = self.config.blog_root
         logger.info("Writing blog index", link=str(link))
         blog_template = self.config.templates_dir / "blog.pt"
         template = "blog" if blog_template.exists() else "posts"
         html = self.templates[template](
             layout=self.templates["layout"]["layout"],
-            scribe=self,
+            site=self.site_data,
             title="Blog",
             link=link,
             page=None,
@@ -200,7 +218,7 @@ class TheScribe:
             logger.info("Writing year index", year=year, post_count=len(posts), link=str(link))
             html = self.templates["posts"](
                 layout=self.templates["layout"]["layout"],
-                scribe=self,
+                site=self.site_data,
                 title=f"Archive: {year}",
                 link=link,
                 posts=posts,
@@ -226,7 +244,7 @@ class TheScribe:
             )
             html = self.templates["posts"](
                 layout=self.templates["layout"]["layout"],
-                scribe=self,
+                site=self.site_data,
                 title=f"Archive: {month_name} {year}",
                 link=link,
                 posts=posts,
@@ -238,13 +256,16 @@ class TheScribe:
             output_path.write_text(html)
 
     def write_tags_index(self):
+        """
+        Render and write the tags index page listing all tags.
+        """
         link = self.config.blog_root / "tags"
         logger.info("Writing tags index", len=len(self.tags), link=str(link))
         html = self.templates["tags"](
             layout=self.templates["layout"]["layout"],
             title="Tags",
             link=link,
-            scribe=self,
+            site=self.site_data,
             page=None,
             post=None,
         )
@@ -260,7 +281,7 @@ class TheScribe:
             tag_str = tag.replace("-", " ")
             html = self.templates["posts"](
                 layout=self.templates["layout"]["layout"],
-                scribe=self,
+                site=self.site_data,
                 posts=posts,
                 title=f"Tag: {tag_str}",
                 link=link,
@@ -272,11 +293,14 @@ class TheScribe:
             output_path.write_text(html)
 
     def write_archive_page(self):
+        """
+        Render and write the full blog archive page.
+        """
         link = self.config.blog_root / "archive"
         logger.info("Writing archive page")
         html = self.templates["archive"](
             layout=self.templates["layout"]["layout"],
-            scribe=self,
+            site=self.site_data,
             title="Blog archive",
             link=link,
             page=None,
@@ -287,11 +311,14 @@ class TheScribe:
         output_path.write_text(html)
 
     def write_sitemap(self):
+        """
+        Render and write sitemap.xml.
+        """
         logger.info("Writing sitemap")
         years = {post.published.year for post in self.posts}
         months = {(post.published.year, post.published.strftime("%m")) for post in self.posts}
         html = self.templates["sitemap"](
-            scribe=self,
+            site=self.site_data,
             years=years,
             months=months,
             page=None,
@@ -302,9 +329,12 @@ class TheScribe:
         output_path.write_text(html)
 
     def write_atom_feed(self):
+        """
+        Render and write the Atom feed.
+        """
         logger.info("Writing atom feed")
         html = self.templates["atom"](
-            scribe=self,
+            site=self.site_data,
             page=None,
             post=None,
         )
