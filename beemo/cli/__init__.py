@@ -8,13 +8,52 @@ app = Typer(no_args_is_help=True)
 
 
 @app.command("build")
-def do_build():
+def do_build(
+    pages_dir: options.pages_dir_opt = None,
+    posts_dir: options.posts_dir_opt = None,
+    static_dir: options.static_dir_opt = None,
+    templates_dir: options.templates_dir_opt = None,
+    output_dir: options.output_dir_opt = None,
+    blog_root: options.blog_root_opt = None,
+    base_url: options.base_url_opt = None,
+):
     """
     Build the site.
     """
-    from ..scribe import TheScribe
+    from pathlib import Path
 
-    TheScribe().build_site()
+    from ..scribe import TheScribe
+    from ..settings import BuildConfig
+
+    config = get_config()
+    build_config = config.build if config else None
+
+    static_dir = require(
+        static_dir or (build_config.static_dir if build_config else None), "build.static_dir"
+    )
+    templates_dir = require(
+        templates_dir or (build_config.templates_dir if build_config else None),
+        "build.templates_dir",
+    )
+    output_dir = require(
+        output_dir or (build_config.output_dir if build_config else None), "build.output_dir"
+    )
+    pages_dir = pages_dir or (build_config.pages_dir if build_config else None)
+    posts_dir = posts_dir or (build_config.posts_dir if build_config else None)
+    blog_root = blog_root or (build_config.blog_root if build_config else Path())
+    base_url = base_url or (build_config.base_url if build_config else None)
+
+    TheScribe(
+        BuildConfig(
+            pages_dir=pages_dir,
+            posts_dir=posts_dir,
+            static_dir=static_dir,
+            templates_dir=templates_dir,
+            output_dir=output_dir,
+            blog_root=blog_root,
+            base_url=base_url,
+        )
+    ).build_site()
 
 
 @app.command("logs")

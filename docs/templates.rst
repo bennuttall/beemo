@@ -2,27 +2,29 @@
 Templates
 =========
 
+.. currentmodule:: beemo
+
 Beemo uses `Chameleon <https://chameleon.readthedocs.io/en/latest/>`_ page templates (``*.pt``
-files). All site build templates receive a ``scribe`` argument — an instance of ``TheScribe`` — as
-well as ``post`` and ``page`` arguments (one will be the relevant content object for that template;
-the other will be ``None``). This allows the layout template to detect context regardless of which
-template is active. Template-specific variables are listed below. The ``scribe`` instance exposes
-the following attributes that templates commonly use:
+files). All site build templates receive a ``site`` argument — an instance of
+:class:`~site_data.SiteData` — as well as ``post`` and ``page`` arguments (one will be the relevant
+content object for that template; the other will be ``None``). This allows the layout template to
+detect context regardless of which template is active. Template-specific variables are listed below.
+The ``site`` instance exposes the following attributes that templates commonly use:
 
 .. list-table::
    :header-rows: 1
 
    * - Attribute
      - Description
-   * - ``scribe.posts``
+   * - ``site.posts``
      - All posts, sorted by ``published`` date (descending)
-   * - ``scribe.pages``
+   * - ``site.pages``
      - All pages
-   * - ``scribe.tags``
+   * - ``site.tags``
      - Dict mapping tag name → list of posts, sorted by number of posts then alphabetically
-   * - ``scribe.config``
+   * - ``site.config``
      - The active build configuration
-   * - ``scribe.now``
+   * - ``site.now``
      - The current UTC datetime (set at build time)
 
 Site build templates
@@ -50,8 +52,8 @@ home
 
    * - Variable
      - Description
-   * - ``scribe``
-     - The ``TheScribe`` instance
+   * - ``site``
+     - The ``SiteData`` instance
    * - ``page``
      - The homepage ``Page`` object
    * - ``layout``
@@ -70,8 +72,8 @@ a ``template`` field in its ``meta.yml``.
 
    * - Variable
      - Description
-   * - ``scribe``
-     - The ``TheScribe`` instance
+   * - ``site``
+     - The ``SiteData`` instance
    * - ``page``
      - The ``Page`` object for this page
    * - ``layout``
@@ -90,8 +92,8 @@ post
 
    * - Variable
      - Description
-   * - ``scribe``
-     - The ``TheScribe`` instance
+   * - ``site``
+     - The ``SiteData`` instance
    * - ``post``
      - The ``Post`` object for this post
    * - ``prev_post``
@@ -116,8 +118,8 @@ instead (see below).
 
    * - Variable
      - Description
-   * - ``scribe``
-     - The ``TheScribe`` instance
+   * - ``site``
+     - The ``SiteData`` instance
    * - ``title``
      - Page title (``"Blog"``)
    * - ``link``
@@ -138,8 +140,8 @@ archive pages, and tag pages.
 
    * - Variable
      - Description
-   * - ``scribe``
-     - The ``TheScribe`` instance
+   * - ``site``
+     - The ``SiteData`` instance
    * - ``title``
      - Page title (e.g. ``"Blog"``, ``"Archive: 2024"``, ``"Tag: python"``)
    * - ``link``
@@ -161,8 +163,8 @@ tags
 
    * - Variable
      - Description
-   * - ``scribe``
-     - The ``TheScribe`` instance
+   * - ``site``
+     - The ``SiteData`` instance
    * - ``title``
      - Page title (``"Tags"``)
    * - ``link``
@@ -182,8 +184,8 @@ archive
 
    * - Variable
      - Description
-   * - ``scribe``
-     - The ``TheScribe`` instance
+   * - ``site``
+     - The ``SiteData`` instance
    * - ``title``
      - Page title (``"Blog archive"``)
    * - ``link``
@@ -203,8 +205,8 @@ sitemap
 
    * - Variable
      - Description
-   * - ``scribe``
-     - The ``TheScribe`` instance
+   * - ``site``
+     - The ``SiteData`` instance
    * - ``years``
      - Set of years (integers) that have posts
    * - ``months``
@@ -222,8 +224,8 @@ atom
 
    * - Variable
      - Description
-   * - ``scribe``
-     - The ``TheScribe`` instance
+   * - ``site``
+     - The ``SiteData`` instance
 
 Post and Page objects
 =====================
@@ -273,50 +275,3 @@ Both ``Page`` and ``Post`` share the following attributes:
      - ``True`` if ``modified`` differs from ``published``
    * - ``tags``
      - List of tag strings
-
-Analytics template
-==================
-
-The analytics template is separate from the site build templates and does **not** receive a
-``scribe`` instance.
-
-analytics
----------
-
-**File:** ``analytics.pt``
-
-**Used for:** each page of the analytics site (summary, all-time, year, and month pages).
-
-.. list-table::
-   :header-rows: 1
-
-   * - Variable
-     - Description
-   * - ``report``
-     - Analytics data dict (totals, hits by day/month, top pages, user agents, referrers)
-   * - ``title``
-     - Page title string
-   * - ``nav``
-     - Navigation context dict (``type``, ``breadcrumbs``, ``years``, and optionally ``months``)
-   * - ``json``
-     - Python's ``json`` module, for serialising chart data
-   * - ``datetime``
-     - Python's ``datetime`` class, for formatting ISO date strings
-
-Dates in ``report`` are ISO strings (e.g. ``2026-03-01``) so templates can format them as needed.
-
-The ``nav`` dict always contains:
-
-.. list-table::
-   :header-rows: 1
-
-   * - Key
-     - Description
-   * - ``type``
-     - One of ``"summary"``, ``"all-time"``, ``"year"``, or ``"month"``
-   * - ``breadcrumbs``
-     - List of ``{"label": str, "url": str}`` dicts for breadcrumb navigation
-   * - ``years``
-     - List of ``{"label": str, "url": str}`` dicts for year navigation buttons
-   * - ``months``
-     - List of ``{"label": str, "url": str}`` dicts for month navigation (year and month pages only)

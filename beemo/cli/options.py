@@ -4,6 +4,10 @@ from typing import Annotated, Optional
 from typer import Option
 
 
+pages_dir_opt = Annotated[Optional[Path], Option(help="Pages content directory")]
+posts_dir_opt = Annotated[Optional[Path], Option(help="Posts content directory")]
+static_dir_opt = Annotated[Optional[Path], Option(help="Static files directory")]
+blog_root_opt = Annotated[Optional[Path], Option(help="URL path prefix for blog pages")]
 logs_csv_dir_opt = Annotated[Optional[Path], Option(help="Output directory for CSV files")]
 pattern_opt = Annotated[
     Optional[str], Option(help="Filename glob pattern when input is a directory")

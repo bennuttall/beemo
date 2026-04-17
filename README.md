@@ -6,22 +6,23 @@ site based on the known site structure by processing Apache logs.
 
 ![](https://raw.githubusercontent.com/bennuttall/beemo/refs/heads/main/beemo.png)
 
-## PyPI
-
-- [beemo](https://pypi.org/project/beemo/)
-
 ## Features
 
 - Content as HTML, markdown or reStructuredText
 - Pages
-- Posts
-- Tags
-- Archives (index, years and months)
+- Blog:
+  - Posts
+  - Tags
+  - Archives (index, years and months)
+  - Atom feed
+- Three modes:
+  - Posts only
+  - Pages only
+  - Pages + posts
 - XML sitemap
-- Atom feed
 - Custom Chameleon templates
 - Custom CSS, JS and other static files
-- Apache log analytics (optional, via `beemo[logs]`)
+- Apache log analytics (optional, via ``beemo[logs]``)
 
 ## Install
 
@@ -51,6 +52,12 @@ Sites built with Beemo:
 - [pyjok.es](https://pyjok.es/) ([repo](https://github.com/pyjokes/website))
 
 If you wish to use this project for your own website, these examples will be a useful reference.
+
+## Links
+
+- [PyPI](https://pypi.org/project/beemo/)
+- [GitHub](https://github.com/bennuttall/beemo)
+- [ReadTheDocs](https://beemo.readthedocs.io/)
 
 ## Licence
 

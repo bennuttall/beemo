@@ -1,5 +1,5 @@
 ==============
-Adding Content
+Adding content
 ==============
 
 Posts and pages are each stored as a directory containing a ``meta.yml`` file and a content file.

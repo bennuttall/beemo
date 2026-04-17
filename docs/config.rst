@@ -67,7 +67,7 @@ Optional build keys
     build:
         blog_root: blog   # posts served at /blog/year/month/slug/
 
-``base_url`` sets the site's base URL, made available to templates via ``scribe.config.base_url``:
+``base_url`` sets the site's base URL, made available to templates via ``site.config.base_url``:
 
 .. code-block:: yaml
 

@@ -4,7 +4,7 @@ Beemo Python API reference
 
 These pages document the Beemo Python API.
 
-For example usage, see :doc:`../usage`.
+For example usage, see :doc:`../overview`.
 
 Contents
 ========
@@ -12,6 +12,6 @@ Contents
 .. toctree::
     :maxdepth: 1
 
-    scribe
+    site-data
     config
     post-types

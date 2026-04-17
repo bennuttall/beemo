@@ -1,8 +1,8 @@
-=====
-Usage
-=====
+========
+Overview
+========
 
-Create content directories e.g. ``posts``, ``pages``, ``static`` and ``templates``.
+An overview of how to create a site with Beemo.
 
 Posts
 =====
@@ -34,6 +34,12 @@ Create Chameleon templates for your site in the ``templates`` directory. See the
 `Chameleon docs <https://chameleon.readthedocs.io/en/latest/>`_ for reference, and :doc:`templates`
 for the full list of templates and their variables.
 
+Configuration
+=============
+
+Configure your site by creating a config file (e.g. ``config.yml``) and setting the appropriate
+settings. See :doc:`config` for the full list of settings and their descriptions.
+
 Build
 =====
 
@@ -43,9 +49,9 @@ Install Beemo:
 
    pip install beemo
 
-Build your site by running the command ``beemo build`` with the environment variable
-``BEEMO_CONFIG`` set pointing at a valid config file. It will build your site into your configured
-``output_dir``.
+Build your site by running ``beemo build``. Either set the ``BEEMO_CONFIG`` environment variable to
+point at a config file, or pass the build settings directly as command-line options — see
+:doc:`cli/build` for the full list. The site will be written to your configured ``output_dir``.
 
 You can then serve the built site locally with e.g. ``python -m http.server -d www`` and view it at
 e.g. ``http://localhost:8000``. Make changes to your content or templates and rebuild to see them

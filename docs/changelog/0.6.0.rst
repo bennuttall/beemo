@@ -1,0 +1,42 @@
+==================
+0.6.0 (2026-04-17)
+==================
+
+.. currentmodule:: beemo
+
+Templates
+=========
+
+- A :class:`~models.site_data.SiteData` object is now passed into templates as ``site``
+- ``post`` and ``page`` are now always passed into every template, allowing all templates to access
+  a standard set of site data
+- Added ``og_image`` field to post and page metadata
+- Added ``base_url`` to ``BuildConfig``, accessible in templates via ``site.config.base_url``
+
+Content
+=======
+
+- The URL slug is now derived from the content directory name rather than being set in ``meta.yml``
+- Added a dedicated ``HomePage`` model for the homepage (served at ``/``, no slug)
+- Posts and pages can now specify a custom template via the ``template`` field in ``meta.yml``,
+  overriding the default ``post`` or ``page`` template
+- Removed the ``full_width`` meta field in favour of using custom templates
+
+CLI
+===
+
+- ``beemo build`` now accepts all build settings as command-line options, as an alternative to
+  using a config file
+
+Analytics
+=========
+
+- ``beemo build`` now generates ``manifest.json`` in ``output_dir`` at build time
+- ``beemo analytics`` now requires a ``--manifest`` path (or ``analytics.manifest_path`` in
+  config) rather than reading the build config directly
+
+Documentation
+=============
+
+- Added extensive documentation: getting started, content reference, output files, configuration,
+  templates, analytics, CLI reference, and API reference
