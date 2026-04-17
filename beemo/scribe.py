@@ -89,7 +89,7 @@ class TheScribe:
         else:
             images = []
 
-        return {"html": html, "images": images, **metadata}
+        return {"html": html, "images": images, "slug": src_dir.name, **metadata}
 
     def get_tags(self) -> dict[str, list[Post]]:
         tags = defaultdict(list)
