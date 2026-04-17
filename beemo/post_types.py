@@ -8,7 +8,8 @@ from .settings import get_config
 from .utils import get_excerpt, get_text
 
 
-settings = get_config().build
+def get_build_config():
+    return get_config().build
 
 
 class PostType(BaseModel):
@@ -54,14 +55,14 @@ class PostType(BaseModel):
         if self.template is not None:
             if self.template.endswith(".pt"):
                 raise ValueError(f"Template should not include extension: {self.template}")
-            template_path = settings.templates_dir / f"{self.template}.pt"
+            template_path = get_build_config().templates_dir / f"{self.template}.pt"
             if not template_path.is_file():
                 raise ValueError(f"Template not found: {self.template}")
         return self
 
     @property
     def output_path(self):
-        return settings.output_dir / self.link
+        return get_build_config().output_dir / self.link
 
 
 class Page(PostType):
@@ -104,7 +105,7 @@ class Post(PostType):
     @model_validator(mode="after")
     def set_link(self):
         post_path = Path(str(self.published.year)) / self.published.strftime("%m") / self.slug
-        if settings.pages_dir is None:
+        if get_build_config().pages_dir is None:
             self.link = post_path
         else:
             self.link = Path("blog") / post_path
