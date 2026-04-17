@@ -66,13 +66,21 @@ class PostType(BaseModel):
 
 class Page(PostType):
     post_type: str = "page"
+    slug: str
 
     @model_validator(mode="after")
     def set_link(self):
-        if self.slug is None:
-            self.link = Path()
-        else:
-            self.link = Path(self.slug)
+        self.link = Path(self.slug)
+        return self
+
+
+class HomePage(Page):
+    post_type: str = "page"
+    slug: None = None
+
+    @model_validator(mode="after")
+    def set_link(self):
+        self.link = Path()
         return self
 
 

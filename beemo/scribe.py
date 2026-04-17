@@ -10,7 +10,7 @@ import yaml
 from chameleon import PageTemplateLoader
 from structlog import get_logger
 
-from .post_types import Page, Post
+from .post_types import HomePage, Page, Post
 from .settings import get_config
 from .utils import markdown_to_html, next_current_prev, rst_to_html
 
@@ -99,10 +99,10 @@ class TheScribe:
         # Sort tags by number of posts (descending) and then alphabetically
         return dict(sorted(tags.items(), key=lambda item: (-len(item[1]), item[0])))
 
-    def get_homepage(self) -> Page:
+    def get_homepage(self) -> HomePage:
         homepage_dir = self.config.pages_dir / "home"
         page_data = self.parse_content(homepage_dir)
-        return validate_page(page_data, src_dir=homepage_dir)
+        return validate_homepage(page_data, src_dir=homepage_dir)
 
     def get_archive(self) -> dict[int, list[Post]]:
         archive = defaultdict(list)
@@ -425,6 +425,15 @@ def validate_page(page_data: dict[str], src_dir: Path) -> Page:
         return Page.model_validate(page_data)
     except Exception as exc:
         logger.error("Failed to validate page", src_dir=str(src_dir))
+        print(exc)
+        sys.exit(1)
+
+
+def validate_homepage(page_data: dict[str], src_dir: Path) -> HomePage:
+    try:
+        return HomePage.model_validate(page_data)
+    except Exception as exc:
+        logger.error("Failed to validate homepage", src_dir=str(src_dir))
         print(exc)
         sys.exit(1)
 
