@@ -430,6 +430,7 @@ def validate_page(page_data: dict[str], src_dir: Path) -> Page:
 
 
 def validate_homepage(page_data: dict[str], src_dir: Path) -> HomePage:
+    page_data.pop("slug", None)
     try:
         return HomePage.model_validate(page_data)
     except Exception as exc:
