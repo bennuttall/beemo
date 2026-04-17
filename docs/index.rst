@@ -71,10 +71,11 @@ Table of Contents
    :maxdepth: 4
    :titlesonly:
 
-   getting-started
+   usage
    content
    templates
    config
    output
    analytics
    cli/index
+   api/index

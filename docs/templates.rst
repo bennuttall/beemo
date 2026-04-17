@@ -246,7 +246,7 @@ Both ``Page`` and ``Post`` share the following attributes:
    * - ``description``
      - Meta description (defaults to ``excerpt`` if not set)
    * - ``slug``
-     - URL slug
+     - URL slug (derived from the content directory name)
    * - ``link``
      - Path relative to the output root
    * - ``images``

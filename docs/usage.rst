@@ -1,6 +1,6 @@
-===============
-Getting started
-===============
+=====
+Usage
+=====
 
 Create content directories e.g. ``posts``, ``pages``, ``static`` and ``templates``.
 

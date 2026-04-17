@@ -6,6 +6,8 @@ Posts and pages are each stored as a directory containing a ``meta.yml`` file an
 The content file can be HTML (``index.html``), Markdown (``index.md``), or reStructuredText
 (``index.rst``). An optional ``images/`` subdirectory holds image files used within the content.
 
+The directory name is used as the slug for both posts and pages.
+
 Posts
 =====
 
@@ -36,9 +38,6 @@ Example layout:
    * - ``title``
      - Yes
      - Post title
-   * - ``slug``
-     - Yes
-     - URL slug (used in the post's path)
    * - ``published``
      - Yes
      - Publication date/time (e.g. ``2026-04-17`` or ``2026-04-17 12:00:00``)
@@ -72,7 +71,6 @@ Example ``meta.yml`` for a post:
 .. code-block:: yaml
 
    title: My first post
-   slug: my-first-post
    published: 2026-04-17
    tags:
      - python
@@ -83,7 +81,8 @@ Pages
 =====
 
 Page directories sit directly inside ``pages_dir``. There is one special directory named ``home``
-which provides the content for the site homepage; all other directories become individual pages.
+which provides the content for the site homepage — it is served at ``/`` and does not use the
+directory name as a slug. All other directories become individual pages, served at ``/{dirname}/``.
 
 Example layout:
 
@@ -108,9 +107,6 @@ Example layout:
    * - ``title``
      - Yes
      - Page title
-   * - ``slug``
-     - No
-     - URL slug; if omitted the page is served at the site root (``/``)
    * - ``description``
      - No
      - Meta description (defaults to auto-derived ``excerpt``)
@@ -135,4 +131,3 @@ Example ``meta.yml`` for a page:
 .. code-block:: yaml
 
    title: About
-   slug: about
