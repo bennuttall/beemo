@@ -101,4 +101,4 @@ with the following keys:
         output_dir: analytics              # output directory for the analytics site
         manifest_path: www/manifest.json   # path to manifest.json produced by beemo build
         base_url: https://mysite.com
-        title: ""                          # optional; derived from base_url if omitted
+        title: ""                          # optional

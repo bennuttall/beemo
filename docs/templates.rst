@@ -16,10 +16,14 @@ The ``site`` instance exposes the following attributes that templates commonly u
 
    * - Attribute
      - Description
+   * - ``site.homepage``
+     - The homepage object, or ``None`` if not in pages mode
    * - ``site.posts``
-     - All posts, sorted by ``published`` date (descending)
+     - All posts, sorted by ``published`` date, descending (if in posts mode)
    * - ``site.pages``
-     - All pages
+     - All pages (if in pages mode)
+   * - ``site.archive``
+     - Dict mapping year (int) to a list of posts published in that year
    * - ``site.tags``
      - Dict mapping tag name → list of posts, sorted by number of posts then alphabetically
    * - ``site.config``
