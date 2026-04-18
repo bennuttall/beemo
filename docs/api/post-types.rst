@@ -32,7 +32,7 @@ See :doc:`../templates` for more information on how to use these objects within 
     :show-inheritance:
 
 .. autoclass:: Post()
-    :members: post_type, slug, title, description, html, text, excerpt, og_image, template, cover_image, author, images, link, published, modified, modified_diff, tags
+    :members: post_type, slug, title, description, html, html_atom_safe, text, excerpt, og_image, template, cover_image, author, images, link, published, modified, modified_diff, tags
     :undoc-members:
     :show-inheritance:
     
