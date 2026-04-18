@@ -129,13 +129,14 @@ class TheScribe:
         # Sort tags by number of posts (descending) and then alphabetically
         return dict(sorted(tags.items(), key=lambda item: (-len(item[1]), item[0])))
 
-    def get_homepage(self) -> HomePage:
+    def get_homepage(self) -> HomePage | None:
         """
         Parse and validate the homepage.
         """
-        homepage_dir = self.config.pages_dir / "home"
-        page_data = self.parse_content(homepage_dir)
-        return validate_homepage(page_data, src_dir=homepage_dir)
+        if self.config.pages_dir:
+            homepage_dir = self.config.pages_dir / "home"
+            page_data = self.parse_content(homepage_dir)
+            return validate_homepage(page_data, src_dir=homepage_dir)
 
     def get_archive(self) -> dict[int, list[Post]]:
         """
