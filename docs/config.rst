@@ -60,7 +60,8 @@ required in the config file. Archives, tag indexes and such are generated automa
 Optional build keys
 -------------------
 
-``blog_root`` sets the path prefix for blog URLs (default: empty, i.e. posts at ``/year/month/slug/``):
+``blog_root`` sets the path prefix for blog URLs (default: empty, i.e. posts at
+``/year/month/slug/``):
 
 .. code-block:: yaml
 
