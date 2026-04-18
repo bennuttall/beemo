@@ -19,7 +19,10 @@ def load_all_csvs(csv_dir: Path) -> list[dict]:
 
 
 def build_analytics(rows: list[dict], manifest: Manifest | None = None, base_url: str = "") -> dict:
-    times = [datetime.fromisoformat(r["time"]) for r in rows]
+    human_rows = [r for r in rows if r.get("is_bot", "False") not in ("True", True)]
+    bot_rows = [r for r in rows if r.get("is_bot", "False") in ("True", True)]
+
+    times = [datetime.fromisoformat(r["time"]) for r in human_rows]
     dates = sorted(set(t.date() for t in times))
     hits_by_day = [sum(1 for t in times if t.date() == d) for d in dates]
 
@@ -28,22 +31,19 @@ def build_analytics(rows: list[dict], manifest: Manifest | None = None, base_url
     hits_by_month = [month_counts[m] for m in months_iso]
     months = months_iso  # "YYYY-MM" strings; templates format for display
 
-    human_rows = [r for r in rows if r.get("is_bot", "False") not in ("True", True)]
-    bot_rows = [r for r in rows if r.get("is_bot", "False") in ("True", True)]
-
-    path_counts = Counter(r["path"] for r in rows)
+    path_counts = Counter(r["path"] for r in human_rows)
     ua_all = Counter(r["ua"] for r in rows)
     ua_bot = Counter(r["ua"] for r in bot_rows)
     ua_counts = [
         {"ua": ua, "hits": n, "is_bot": ua_bot[ua] > n / 2} for ua, n in ua_all.most_common(15)
     ]
-    unique_ips = len(set(r["remote_host"] for r in rows))
+    unique_ips = len(set(r["remote_host"] for r in human_rows))
 
     base_domain = (
         base_url.replace("https://", "").replace("http://", "").rstrip("/") if base_url else ""
     )
     referer_counts = Counter(
-        r["referer"] for r in rows if r.get("referer") and r["referer"] != base_domain
+        r["referer"] for r in human_rows if r.get("referer") and r["referer"] != base_domain
     ).most_common(20)
 
     sections = {"page": [], "post": [], "other": []}

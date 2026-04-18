@@ -10,8 +10,9 @@ import yaml
 from chameleon import PageTemplateLoader
 from structlog import get_logger
 
-from .post_types import Page, Post
-from .settings import get_config
+from .post_types import HomePage, Page, Post
+from .settings import BuildConfig, get_config
+from .site_data import SiteData
 from .utils import markdown_to_html, next_current_prev, rst_to_html
 
 
@@ -19,26 +20,36 @@ logger = get_logger()
 
 
 class TheScribe:
-    def __init__(self, config):
+    def __init__(self, config: BuildConfig | None = None):
         self.now = datetime.now(timezone.utc)
-        self.config = config
-        self.output_path = config.output_dir
+        if config is None:
+            self.config = get_config().build
+        else:
+            self.config = config
+        self.output_path = self.config.output_dir
         self.templates = PageTemplateLoader(
-            search_path=[config.templates_dir],
+            search_path=[self.config.templates_dir],
             default_extension=".pt",
         )
+        self.homepage = self.get_homepage()
         self.pages = list(self.iter_pages())
         self.posts = sorted(self.iter_posts(), key=lambda p: p.published, reverse=True)
+        self.archive = self.get_archive()
         self.tags = self.get_tags()
-
-    @classmethod
-    def from_env(cls) -> "TheScribe":
-        config = get_config()
-        if config.build is None:
-            raise ValueError("No [build] section in config")
-        return cls(config.build)
+        self.site_data = SiteData(
+            config=self.config,
+            homepage=self.homepage,
+            pages=self.pages,
+            posts=self.posts,
+            archive=self.archive,
+            tags=self.tags,
+            now=self.now,
+        )
 
     def setup_output_path(self):
+        """
+        Copy all files from static_dir into the output directory.
+        """
         logger.info("Setting up output path", output_path=str(self.output_path))
         shutil.rmtree(self.output_path, ignore_errors=True)
         self.output_path.mkdir(parents=True, exist_ok=True)
@@ -57,6 +68,9 @@ class TheScribe:
                 shutil.copy2(source_path, destination_path)
 
     def iter_pages(self) -> Generator[Page, None, None]:
+        """
+        Yield all pages from pages_dir, excluding the home directory.
+        """
         if not self.config.pages_dir:
             return
         for page_dir in self.config.pages_dir.iterdir():
@@ -65,6 +79,9 @@ class TheScribe:
                 yield validate_page(page_data, src_dir=page_dir)
 
     def iter_posts(self) -> Generator[Post, None, None]:
+        """
+        Yield all posts found recursively under posts_dir.
+        """
         if not self.config.posts_dir:
             return
         for meta_file in self.config.posts_dir.rglob("meta.yml"):
@@ -73,6 +90,9 @@ class TheScribe:
             yield validate_post(post_data, src_dir=post_dir)
 
     def parse_content(self, src_dir: Path) -> dict[str]:
+        """
+        Read meta.yml, content file, and images from a content directory.
+        """
         metadata_file = src_dir / "meta.yml"
         images_dir = src_dir / "images"
         html_file = src_dir / "index.html"
@@ -96,9 +116,12 @@ class TheScribe:
         else:
             images = []
 
-        return {"html": html, "images": images, **metadata}
+        return {"html": html, "images": images, "slug": src_dir.name, **metadata}
 
     def get_tags(self) -> dict[str, list[Post]]:
+        """
+        Return a dict mapping tag name to posts, sorted by post count then alphabetically.
+        """
         tags = defaultdict(list)
         for post in self.posts:
             for tag in post.tags:
@@ -106,12 +129,19 @@ class TheScribe:
         # Sort tags by number of posts (descending) and then alphabetically
         return dict(sorted(tags.items(), key=lambda item: (-len(item[1]), item[0])))
 
-    def get_homepage(self) -> Page:
-        homepage_dir = self.config.pages_dir / "home"
-        page_data = self.parse_content(homepage_dir)
-        return validate_page(page_data, src_dir=homepage_dir)
+    def get_homepage(self) -> HomePage | None:
+        """
+        Parse and validate the homepage.
+        """
+        if self.config.pages_dir:
+            homepage_dir = self.config.pages_dir / "home"
+            page_data = self.parse_content(homepage_dir)
+            return validate_homepage(page_data, src_dir=homepage_dir)
 
     def get_archive(self) -> dict[int, list[Post]]:
+        """
+        Return a dict mapping year to list of posts published that year.
+        """
         archive = defaultdict(list)
 
         for post in self.posts:
@@ -121,28 +151,35 @@ class TheScribe:
         return dict(archive)
 
     def write_homepage(self):
+        """
+        Render and write the homepage using the home template.
+        """
         logger.info("Writing homepage")
         homepage = self.get_homepage()
         html = self.templates["home"](
             layout=self.templates["layout"]["layout"],
+            site=self.site_data,
             page=homepage,
-            posts=self.posts,
-            now=self.now,
+            post=None,
         )
         output_path = self.output_path / "index.html"
         output_path.parent.mkdir(parents=True, exist_ok=True)
         output_path.write_text(html)
 
     def write_pages(self):
+        """
+        Render and write an index.html for each page in pages_dir.
+        """
         logger.info("Writing pages", len=len(self.pages))
         for page in self.pages:
-            logger.info("Writing page", output_path=str(page.output_path))
+            template = page.template or "page"
+            logger.info("Writing page", output_path=str(page.output_path), template=template)
             page.output_path.mkdir(parents=True, exist_ok=True)
-            html = self.templates["page"](
+            html = self.templates[template](
                 layout=self.templates["layout"]["layout"],
+                site=self.site_data,
                 page=page,
-                posts=self.posts,
-                now=self.now,
+                post=None,
             )
             html_path = page.output_path / "index.html"
             html_path.write_text(html)
@@ -155,17 +192,21 @@ class TheScribe:
                     logger.info("Copied image", path=str(img_dest))
 
     def write_posts(self):
+        """
+        Render and write an index.html for each post.
+        """
         logger.info("Writing posts", len=len(self.posts))
         for next_post, post, prev_post in next_current_prev(self.posts):
-            logger.info("Writing post", output_path=str(post.output_path))
+            template = post.template or "post"
+            logger.info("Writing post", output_path=str(post.output_path), template=template)
             post.output_path.mkdir(parents=True, exist_ok=True)
-            html = self.templates["post"](
+            html = self.templates[template](
                 layout=self.templates["layout"]["layout"],
+                site=self.site_data,
                 post=post,
                 prev_post=prev_post,
                 next_post=next_post,
-                posts=self.posts,
-                now=self.now,
+                page=None,
             )
             html_path = post.output_path / "index.html"
             html_path.write_text(html)
@@ -178,22 +219,29 @@ class TheScribe:
                     logger.info("Copied image", path=str(img_dest))
 
     def write_blog_index(self):
+        """
+        Render and write the blog index page using blog.pt or posts.pt.
+        """
         link = self.config.blog_root
         logger.info("Writing blog index", link=str(link))
         blog_template = self.config.templates_dir / "blog.pt"
         template = "blog" if blog_template.exists() else "posts"
         html = self.templates[template](
             layout=self.templates["layout"]["layout"],
+            site=self.site_data,
             title="Blog",
             link=link,
-            posts=self.posts,
-            now=self.now,
+            page=None,
+            post=None,
         )
         output_path = self.output_path / link / "index.html"
         output_path.parent.mkdir(parents=True, exist_ok=True)
         output_path.write_text(html)
 
     def write_year_indexes(self):
+        """
+        Render and write a posts index page for each year that has posts.
+        """
         logger.info("Writing year indexes")
         years = defaultdict(list)
         for post in self.posts:
@@ -204,17 +252,21 @@ class TheScribe:
             logger.info("Writing year index", year=year, post_count=len(posts), link=str(link))
             html = self.templates["posts"](
                 layout=self.templates["layout"]["layout"],
+                site=self.site_data,
                 title=f"Archive: {year}",
                 link=link,
                 posts=posts,
-                all_posts=self.posts,
-                now=self.now,
+                page=None,
+                post=None,
             )
             output_path = self.output_path / link / "index.html"
             output_path.parent.mkdir(parents=True, exist_ok=True)
             output_path.write_text(html)
 
     def write_month_indexes(self):
+        """
+        Render and write a posts index page for each month that has posts.
+        """
         logger.info("Writing month indexes")
         months = defaultdict(list)
         for post in self.posts:
@@ -229,32 +281,39 @@ class TheScribe:
             )
             html = self.templates["posts"](
                 layout=self.templates["layout"]["layout"],
+                site=self.site_data,
                 title=f"Archive: {month_name} {year}",
                 link=link,
                 posts=posts,
-                all_posts=self.posts,
-                now=self.now,
+                page=None,
+                post=None,
             )
             output_path = self.output_path / link / "index.html"
             output_path.parent.mkdir(parents=True, exist_ok=True)
             output_path.write_text(html)
 
     def write_tags_index(self):
+        """
+        Render and write the tags index page listing all tags.
+        """
         link = self.config.blog_root / "tags"
         logger.info("Writing tags index", len=len(self.tags), link=str(link))
         html = self.templates["tags"](
             layout=self.templates["layout"]["layout"],
             title="Tags",
             link=link,
-            tags=self.tags,
-            posts=self.posts,
-            now=self.now,
+            site=self.site_data,
+            page=None,
+            post=None,
         )
         output_path = self.output_path / link / "index.html"
         output_path.parent.mkdir(parents=True, exist_ok=True)
         output_path.write_text(html)
 
     def write_tag_pages(self):
+        """
+        Render and write a posts index page for each tag.
+        """
         logger.info("Writing tag pages", len=len(self.tags))
         for tag, posts in self.tags.items():
             link = self.config.blog_root / "tags" / tag
@@ -262,60 +321,71 @@ class TheScribe:
             tag_str = tag.replace("-", " ")
             html = self.templates["posts"](
                 layout=self.templates["layout"]["layout"],
+                site=self.site_data,
+                posts=posts,
                 title=f"Tag: {tag_str}",
                 link=link,
-                posts=posts,
-                all_posts=self.posts,
-                now=self.now,
+                page=None,
+                post=None,
             )
             output_path = self.output_path / link / "index.html"
             output_path.parent.mkdir(parents=True, exist_ok=True)
             output_path.write_text(html)
 
     def write_archive_page(self):
+        """
+        Render and write the full blog archive page.
+        """
         link = self.config.blog_root / "archive"
         logger.info("Writing archive page")
-        archive = self.get_archive()
         html = self.templates["archive"](
             layout=self.templates["layout"]["layout"],
+            site=self.site_data,
             title="Blog archive",
             link=link,
-            archive=archive,
-            posts=self.posts,
-            now=self.now,
+            page=None,
+            post=None,
         )
         output_path = self.output_path / link / "index.html"
         output_path.parent.mkdir(parents=True, exist_ok=True)
         output_path.write_text(html)
 
     def write_sitemap(self):
+        """
+        Render and write sitemap.xml.
+        """
         logger.info("Writing sitemap")
         years = {post.published.year for post in self.posts}
         months = {(post.published.year, post.published.strftime("%m")) for post in self.posts}
         html = self.templates["sitemap"](
-            pages=[page for page in self.pages if page.slug != "404"],
-            posts=self.posts,
-            tags=list(self.tags),
+            site=self.site_data,
             years=years,
             months=months,
-            now=self.now,
+            page=None,
+            post=None,
         )
         output_path = self.output_path / "sitemap.xml"
         output_path.parent.mkdir(parents=True, exist_ok=True)
         output_path.write_text(html)
 
     def write_atom_feed(self):
-        logger.info("Writing Atom feed")
+        """
+        Render and write the Atom feed.
+        """
+        logger.info("Writing atom feed")
         html = self.templates["atom"](
-            title="Blog",
-            posts=self.posts[:10],
-            now=self.now,
+            site=self.site_data,
+            page=None,
+            post=None,
         )
         output_path = self.output_path / self.config.blog_root / "atom.xml"
         output_path.parent.mkdir(parents=True, exist_ok=True)
         output_path.write_text(html)
 
     def write_json(self):
+        """
+        Write posts.json containing title, link, and published date for all posts.
+        """
         logger.info("Writing json")
         data = {
             "posts": [
@@ -330,7 +400,80 @@ class TheScribe:
         output_path = self.output_path / "posts.json"
         output_path.write_text(json.dumps(data, indent=4))
 
+    def get_manifest_entries(self) -> list[dict]:
+        """
+        Return a list of manifest entries for all pages, posts, and index pages, for use by beemo
+        analytics.
+        """
+        entries = []
+
+        def url(link: Path) -> str:
+            s = str(link)
+            return "/" if s == "." else f"/{s}/"
+
+        if self.config.pages_dir is not None:
+            homepage = self.get_homepage()
+            entries.append({"url": "/", "title": homepage.title, "type": "page"})
+            for page in self.pages:
+                entries.append({"url": url(page.link), "title": page.title, "type": "page"})
+
+        if self.config.posts_dir is not None:
+            for post in self.posts:
+                entries.append(
+                    {
+                        "url": url(post.link),
+                        "title": post.title,
+                        "type": "post",
+                        "published": post.published.date().isoformat(),
+                        "tags": post.tags,
+                    }
+                )
+
+            blog = self.config.blog_root
+            entries.append({"url": url(blog), "title": "Blog", "type": "index"})
+            entries.append(
+                {"url": url(blog / "archive"), "title": "Blog archive", "type": "archive"}
+            )
+            entries.append({"url": url(blog / "tags"), "title": "Tags", "type": "index"})
+
+            for tag in self.tags:
+                tag_str = tag.replace("-", " ")
+                entries.append({"url": url(blog / "tags" / tag), "title": tag_str, "type": "tag"})
+
+            years: dict = defaultdict(list)
+            months: dict = defaultdict(list)
+            for post in self.posts:
+                y = post.published.strftime("%Y")
+                m = post.published.strftime("%m")
+                years[y].append(post)
+                months[(y, m)].append(post)
+
+            for y in years:
+                entries.append({"url": url(blog / y), "title": f"Archive: {y}", "type": "archive"})
+            for y, m in months:
+                month_name = datetime.strptime(m, "%m").strftime("%B")
+                entries.append(
+                    {
+                        "url": url(blog / y / m),
+                        "title": f"Archive: {month_name} {y}",
+                        "type": "archive",
+                    }
+                )
+
+        return entries
+
+    def write_manifest(self):
+        """
+        Write manifest.json for use by beemo analytics.
+        """
+        logger.info("Writing manifest")
+        output_path = self.output_path / "manifest.json"
+        output_path.write_text(json.dumps(self.get_manifest_entries(), indent=4))
+
     def build_site(self):
+        """
+        Run the full site build.
+        """
         logger.info("Starting build process", output_dir=str(self.output_path))
 
         self.setup_output_path()
@@ -348,66 +491,7 @@ class TheScribe:
             self.write_atom_feed()
             self.write_json()
         self.write_sitemap()
-
-
-def build_manifest_entries(config) -> list[dict]:
-    """Generate manifest entries from site content without writing to disk."""
-    scribe = TheScribe(config)
-
-    entries = []
-
-    def url(link: Path) -> str:
-        s = str(link)
-        return "/" if s == "." else f"/{s}/"
-
-    if config.pages_dir is not None:
-        homepage = scribe.get_homepage()
-        entries.append({"url": "/", "title": homepage.title, "type": "page"})
-        for page in scribe.pages:
-            entries.append({"url": url(page.link), "title": page.title, "type": "page"})
-
-    if config.posts_dir is not None:
-        for post in scribe.posts:
-            entries.append(
-                {
-                    "url": url(post.link),
-                    "title": post.title,
-                    "type": "post",
-                    "published": post.published.date().isoformat(),
-                    "tags": post.tags,
-                }
-            )
-
-        blog = config.blog_root
-        entries.append({"url": url(blog), "title": "Blog", "type": "index"})
-        entries.append({"url": url(blog / "archive"), "title": "Blog archive", "type": "archive"})
-        entries.append({"url": url(blog / "tags"), "title": "Tags", "type": "index"})
-
-        for tag in scribe.tags:
-            tag_str = tag.replace("-", " ")
-            entries.append({"url": url(blog / "tags" / tag), "title": tag_str, "type": "tag"})
-
-        years: dict = defaultdict(list)
-        months: dict = defaultdict(list)
-        for post in scribe.posts:
-            y = post.published.strftime("%Y")
-            m = post.published.strftime("%m")
-            years[y].append(post)
-            months[(y, m)].append(post)
-
-        for y in years:
-            entries.append({"url": url(blog / y), "title": f"Archive: {y}", "type": "archive"})
-        for y, m in months:
-            month_name = datetime.strptime(m, "%m").strftime("%B")
-            entries.append(
-                {
-                    "url": url(blog / y / m),
-                    "title": f"Archive: {month_name} {y}",
-                    "type": "archive",
-                }
-            )
-
-    return entries
+        self.write_manifest()
 
 
 def validate_post(post_data: dict[str], src_dir: Path) -> Post:
@@ -428,5 +512,15 @@ def validate_page(page_data: dict[str], src_dir: Path) -> Page:
         sys.exit(1)
 
 
+def validate_homepage(page_data: dict[str], src_dir: Path) -> HomePage:
+    page_data.pop("slug", None)
+    try:
+        return HomePage.model_validate(page_data)
+    except Exception as exc:
+        logger.error("Failed to validate homepage", src_dir=str(src_dir))
+        print(exc)
+        sys.exit(1)
+
+
 def main():
-    TheScribe.from_env().build_site()
+    TheScribe().build_site()

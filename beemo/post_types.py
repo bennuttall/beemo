@@ -8,24 +8,29 @@ from .settings import get_config
 from .utils import get_excerpt, get_text
 
 
-settings = get_config().build
+def get_build_config():
+    return get_config().build
 
 
 class PostType(BaseModel):
     model_config = ConfigDict(extra="allow")
 
+    # given fields
     post_type: str
     slug: str | None = None
     title: str
     description: str | None = None
-    text: str | None = None
     html: str
-    excerpt: str | None = None
-    images: list[Path] = []
-    link: Path | None = None
-    full_width: bool = False
+    og_image: str | None = None
+    template: str | None = None
     cover_image: str | None = None
     author: str | None = None
+    images: list[Path] = []
+
+    # calculated fields
+    text: str | None = None
+    excerpt: str | None = None
+    link: Path | None = None
 
     @model_validator(mode="after")
     def set_text(self):
@@ -45,30 +50,52 @@ class PostType(BaseModel):
             self.description = self.excerpt
         return self
 
+    @model_validator(mode="after")
+    def validate_template(self):
+        if self.template is not None:
+            if self.template.endswith(".pt"):
+                raise ValueError(f"Template should not include extension: {self.template}")
+            template_path = get_build_config().templates_dir / f"{self.template}.pt"
+            if not template_path.is_file():
+                raise ValueError(f"Template not found: {self.template}")
+        return self
+
     @property
     def output_path(self):
-        return settings.output_dir / self.link
+        return get_build_config().output_dir / self.link
 
 
 class Page(PostType):
     post_type: str = "page"
+    slug: str
 
     @model_validator(mode="after")
     def set_link(self):
-        if self.slug is None:
-            self.link = Path()
-        else:
-            self.link = Path(self.slug)
+        self.link = Path(self.slug)
+        return self
+
+
+class HomePage(Page):
+    post_type: str = "page"
+    slug: None = None
+
+    @model_validator(mode="after")
+    def set_link(self):
+        self.link = Path()
         return self
 
 
 class Post(PostType):
-    post_type: str = "post"
+    # given fields
     slug: str
     published: datetime
     modified: datetime | None = None
-    modified_diff: bool = False
     tags: list[str] = []
+
+    # calculated fields
+    post_type: str = "post"
+    modified_diff: bool = False
+    link: Path | None = None
 
     @model_validator(mode="after")
     def set_timezone(self):
@@ -77,11 +104,12 @@ class Post(PostType):
 
     @model_validator(mode="after")
     def set_link(self):
+        config = get_build_config()
         post_path = Path(str(self.published.year)) / self.published.strftime("%m") / self.slug
-        if settings.pages_dir is None:
+        if config.pages_dir is None:
             self.link = post_path
         else:
-            self.link = Path("blog") / post_path
+            self.link = config.blog_root / post_path
         return self
 
     @model_validator(mode="after")

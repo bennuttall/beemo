@@ -9,4 +9,4 @@ def run(input: Path, csv_dir: Path, pattern: str):
         if not is_processed(f, csv_dir):
             print(f"Processing {f}")
             n = process_log_file(f, csv_dir)
-            print(f"  {n} rows -> {csv_dir / (f.name + '.csv')}")
+            print(f"  {n:,} rows -> {csv_dir / (f.name + '.csv')}")

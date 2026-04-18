@@ -25,6 +25,8 @@ def is_html(path: str) -> bool:
 
 
 def normalise_path(path: str) -> str:
+    while "//" in path:
+        path = path.replace("//", "/")
     p = path.lower()
     if p.endswith("/index.html") or p.endswith("/index.htm"):
         return path[: path.rfind("/") + 1]
