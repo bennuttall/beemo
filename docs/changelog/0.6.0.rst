@@ -1,5 +1,5 @@
 ==================
-0.6.0 (2026-04-17)
+0.6.0 (2026-04-18)
 ==================
 
 .. currentmodule:: beemo
@@ -7,7 +7,7 @@
 Templates
 =========
 
-- A :class:`~models.site_data.SiteData` object is now passed into templates as ``site``
+- A :class:`~site_data.SiteData` object is now passed into templates as ``site``
 - ``post`` and ``page`` are now always passed into every template, allowing all templates to access
   a standard set of site data
 - Added ``og_image`` field to post and page metadata
@@ -17,7 +17,7 @@ Content
 =======
 
 - The URL slug is now derived from the content directory name rather than being set in ``meta.yml``
-- Added a dedicated ``HomePage`` model for the homepage (served at ``/``, no slug)
+- Added a dedicated :class:`~post_types.HomePage` model for the homepage (served at ``/``, no slug)
 - Posts and pages can now specify a custom template via the ``template`` field in ``meta.yml``,
   overriding the default ``post`` or ``page`` template
 - Removed the ``full_width`` meta field in favour of using custom templates

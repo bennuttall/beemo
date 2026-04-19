@@ -95,6 +95,7 @@ class Post(PostType):
     # calculated fields
     post_type: str = "post"
     modified_diff: bool = False
+    html_atom_safe: str | None = None
     link: Path | None = None
 
     @model_validator(mode="after")
@@ -131,4 +132,27 @@ class Post(PostType):
         for tag in self.tags:
             if not re.fullmatch(r"[a-z0-9-]+", tag):
                 raise ValueError(f"Invalid tag: {tag}")
+        return self
+
+    @model_validator(mode="after")
+    def set_html_atom_safe(self):
+        html = self.html.replace("]]>", "]]&gt;")
+
+        config = get_build_config()
+        base_url = config.base_url
+        if base_url is None:
+            self.html_atom_safe = html
+            return self
+
+        post_url = f"{base_url}/{self.link}/"
+
+        def make_absolute(match):
+            attr, url = match.group(1), match.group(2)
+            if re.match(r"https?://", url) or url.startswith("//") or url.startswith("/"):
+                return match.group(0)
+            if url.startswith("./"):
+                url = url[2:]
+            return f'{attr}="{post_url}{url}"'
+
+        self.html_atom_safe = re.sub(r'(src|href)="([^"]*)"', make_absolute, html)
         return self

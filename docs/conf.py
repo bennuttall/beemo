@@ -1,7 +1,7 @@
 from datetime import datetime
 
 
-beemo_version = "0.6.0"
+beemo_version = "0.6.1"
 
 # -- General configuration ------------------------------------------------
 
