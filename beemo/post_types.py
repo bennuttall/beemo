@@ -15,6 +15,13 @@ def get_build_config():
 class PostType(BaseModel):
     model_config = ConfigDict(extra="allow")
 
+    # allow access to extra fields without raising an error
+    def __getattr__(self, name: str):
+        try:
+            return super().__getattr__(name)
+        except AttributeError:
+            return None
+
     # given fields
     post_type: str
     slug: str | None = None
