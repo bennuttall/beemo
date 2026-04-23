@@ -1,11 +1,14 @@
-==================
-0.6.0 (2026-04-18)
-==================
+===
+0.6
+===
 
 .. currentmodule:: beemo
 
+0.6.0 (2026-04-18)
+==================
+
 Templates
-=========
+---------
 
 - A :class:`~site_data.SiteData` object is now passed into templates as ``site``
 - ``post`` and ``page`` are now always passed into every template, allowing all templates to access
@@ -14,7 +17,7 @@ Templates
 - Added ``base_url`` to ``BuildConfig``, accessible in templates via ``site.config.base_url``
 
 Content
-=======
+-------
 
 - The URL slug is now derived from the content directory name rather than being set in ``meta.yml``
 - Added a dedicated :class:`~post_types.HomePage` model for the homepage (served at ``/``, no slug)
@@ -23,20 +26,42 @@ Content
 - Removed the ``full_width`` meta field in favour of using custom templates
 
 CLI
-===
+---
 
 - ``beemo build`` now accepts all build settings as command-line options, as an alternative to
   using a config file
 
 Analytics
-=========
+---------
 
 - ``beemo build`` now generates ``manifest.json`` in ``output_dir`` at build time
 - ``beemo analytics`` now requires a ``--manifest`` path (or ``analytics.manifest_path`` in
   config) rather than reading the build config directly
 
 Documentation
-=============
+-------------
 
 - Added extensive documentation: getting started, content reference, output files, configuration,
   templates, analytics, CLI reference, and API reference
+
+0.6.1 (2026-04-19)
+==================
+
+.. currentmodule:: beemo
+
+Templates
+---------
+
+- Added ``html_atom_safe`` field to :class:`~post_types.Post`, which processes post HTML for safe
+  use in Atom feeds: relative ``src`` and ``href`` attributes are resolved to absolute URLs using
+  ``base_url``, and any ``]]>`` sequences are escaped to prevent breaking CDATA sections
+
+0.6.2 (2026-04-23)
+==================
+
+Post Types
+----------
+
+- Added ``__getattr__`` to return ``None`` for unset extra fields in :class:`~post_types.PostType`
+  models, allowing templates to safely access optional metadata without needing to check for
+  existence first
