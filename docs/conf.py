@@ -1,9 +1,7 @@
 from datetime import datetime
 
 
-beemo_version = "0.6.1"
-
-# -- General configuration ------------------------------------------------
+beemo_version = "0.6.2"
 
 project = "beemo"
 version = beemo_version

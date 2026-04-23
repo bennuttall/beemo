@@ -43,6 +43,5 @@ See :doc:`../templates` for more information on how to use these objects within 
     you could access it within a template using `${post.hero_image}`. However, no processing can
     take place so they will remain as strings.
 
-    Also any metadata files which are missing these additional fields may cause template errors as
-    they do not exist as attributes on other instances, so be sure to include them in all metadata
-    files if you intend to use them within templates.
+    It is safe to use these extra fields within templates, as their values will return as ``None``
+    if they are not included in the metadata file.

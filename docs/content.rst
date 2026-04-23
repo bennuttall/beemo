@@ -75,7 +75,7 @@ Example ``meta.yml`` for a post:
    tags:
      - python
      - beemo
-   cover_image: photo.jpg
+   cover_image: images/photo.jpg
 
 Pages
 =====
