@@ -12,6 +12,10 @@ logs_csv_dir_opt = Annotated[Optional[Path], Option(help="Output directory for C
 pattern_opt = Annotated[
     Optional[str], Option(help="Filename glob pattern when input is a directory")
 ]
+live_pattern_opt = Annotated[
+    Optional[str],
+    Option(help="Glob pattern for non-gzipped live/rotated logs, always reprocessed"),
+]
 analytics_csv_dir_opt = Annotated[Optional[Path], Option(help="Input CSV directory")]
 templates_dir_opt = Annotated[Optional[Path], Option(help="Chameleon templates directory")]
 manifest_opt = Annotated[Optional[Path], Option(help="Path to manifest.json from site build")]

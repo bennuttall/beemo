@@ -84,8 +84,9 @@ following keys:
 .. code-block:: yaml
 
     logs:
-        logs_dir: apache2                  # directory of gzipped Apache log files
-        pattern: "mysite.com-access*"      # glob filter for log filenames (default: *.gz)
+        logs_dir: apache2                  # directory of Apache log files
+        pattern: "mysite.com-access*.gz"   # glob filter for gzipped log filenames (default: *.gz), parsed once and cached
+        live_pattern: "mysite.com-access*" # glob filter for non-gzipped live/rotated logs (default: unset, disabled), always reprocessed
 
 Analytics
 =========
