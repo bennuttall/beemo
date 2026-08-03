@@ -84,6 +84,11 @@ Page directories sit directly inside ``pages_dir``. There is one special directo
 which provides the content for the site homepage — it is served at ``/`` and does not use the
 directory name as a slug. All other directories become individual pages, served at ``/{dirname}/``.
 
+The ``home`` directory is optional. If it is omitted, no homepage is written — useful for
+blog-only sites where the blog index is served at ``/`` but you still want standalone pages, such
+as a 404 error page (build a ``pages/404/`` page and point your web server's error document at
+``/404/index.html``).
+
 Example layout:
 
 .. code-block:: text

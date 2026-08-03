@@ -131,12 +131,13 @@ class TheScribe:
 
     def get_homepage(self) -> HomePage | None:
         """
-        Parse and validate the homepage.
+        Parse and validate the homepage, if pages_dir contains a home directory.
         """
         if self.config.pages_dir:
             homepage_dir = self.config.pages_dir / "home"
-            page_data = self.parse_content(homepage_dir)
-            return validate_homepage(page_data, src_dir=homepage_dir)
+            if homepage_dir.is_dir():
+                page_data = self.parse_content(homepage_dir)
+                return validate_homepage(page_data, src_dir=homepage_dir)
 
     def get_archive(self) -> dict[int, list[Post]]:
         """
@@ -155,11 +156,10 @@ class TheScribe:
         Render and write the homepage using the home template.
         """
         logger.info("Writing homepage")
-        homepage = self.get_homepage()
         html = self.templates["home"](
             layout=self.templates["layout"]["layout"],
             site=self.site_data,
-            page=homepage,
+            page=self.homepage,
             post=None,
         )
         output_path = self.output_path / "index.html"
@@ -412,8 +412,8 @@ class TheScribe:
             return "/" if s == "." else f"/{s}/"
 
         if self.config.pages_dir is not None:
-            homepage = self.get_homepage()
-            entries.append({"url": "/", "title": homepage.title, "type": "page"})
+            if self.homepage is not None:
+                entries.append({"url": "/", "title": self.homepage.title, "type": "page"})
             for page in self.pages:
                 entries.append({"url": url(page.link), "title": page.title, "type": "page"})
 
@@ -478,7 +478,8 @@ class TheScribe:
 
         self.setup_output_path()
         if self.config.pages_dir is not None:
-            self.write_homepage()
+            if self.homepage is not None:
+                self.write_homepage()
             self.write_pages()
         if self.config.posts_dir is not None:
             self.write_posts()

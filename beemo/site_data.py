@@ -12,7 +12,7 @@ class SiteData:
     def __init__(
         self,
         config: BuildConfig,
-        homepage: HomePage,
+        homepage: HomePage | None,
         pages: list[Page],
         posts: list[Post],
         archive: dict[int, list[Post]],
@@ -36,11 +36,11 @@ class SiteData:
         return self._config
 
     @property
-    def homepage(self) -> HomePage:
+    def homepage(self) -> HomePage | None:
         """
         The homepage parsed from the "home" directory in ``pages_dir``. This is a
         :class:`~post_types.HomePage` object containing all metadata from ``meta.yml``, the HTML
-        content, and any images.
+        content, and any images. ``None`` if ``pages_dir`` has no "home" directory.
         """
         return self._homepage
 

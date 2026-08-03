@@ -14,7 +14,7 @@ HTML pages
    * - Path
      - Description
    * - ``index.html``
-     - Site homepage (requires ``pages_dir``)
+     - Site homepage (requires a ``home`` directory in ``pages_dir``)
    * - ``{slug}/index.html``
      - Individual pages (one per page in ``pages_dir``)
    * - ``{blog_root}/index.html``
