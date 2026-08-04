@@ -50,6 +50,7 @@ Sites built with Beemo:
 - [blog.piwheels.org](https://blog.piwheels.org) ([repo](https://github.com/piwheels/blog))
 - [pynw.org](https://pynw.org/) ([repo](https://github.com/pythonnorthwestengland/pynw.org))
 - [pyjok.es](https://pyjok.es/) ([repo](https://github.com/pyjokes/website))
+- [mcrcoderdojo.org.uk](https://mcrcoderdojo.org.uk/) ([repo](https://github.com/McrCoderDojo/website))
 
 If you wish to use this project for your own website, these examples will be a useful reference.
 
