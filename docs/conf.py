@@ -1,7 +1,7 @@
 from datetime import datetime
 
 
-beemo_version = "0.6.2"
+beemo_version = "0.7.0"
 
 project = "beemo"
 version = beemo_version

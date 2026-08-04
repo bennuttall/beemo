@@ -1,0 +1,23 @@
+===
+0.7
+===
+
+.. currentmodule:: beemo
+
+0.7.0 (2026-08-04)
+==================
+
+Content
+-------
+
+- The pages ``home`` directory is now optional. If omitted, no homepage is written and
+  ``site.homepage`` is ``None`` — useful for blog-only sites that serve the blog index at ``/`` but
+  still want standalone pages, such as a 404 page
+
+Logs
+----
+
+- Added an opt-in ``live_pattern`` config key (and ``--live-pattern`` CLI option) for processing
+  non-gzipped log files that may still be growing — the live access log, and any log rotated but
+  not yet gzipped. These are always reprocessed on each run, unlike gzipped logs matched by
+  ``pattern``, which are parsed once and cached
