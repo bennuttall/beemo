@@ -15,8 +15,8 @@ COMBINED = '%h %l %u %t "%r" %>s %b "%{Referer}i" "%{User-Agent}i"'
 warnings.filterwarnings("ignore", category=ApacheWarning)
 
 
-def get_csv_path(gz_file: Path, csv_dir: Path) -> Path:
-    return csv_dir / (gz_file.name + ".csv")
+def get_csv_path(log_file: Path, csv_dir: Path) -> Path:
+    return csv_dir / (log_file.name + ".csv")
 
 
 def is_html(path: str) -> bool:
@@ -40,16 +40,22 @@ def referer_domain(referer_url) -> str:
     return domain.split(":")[0]
 
 
-def is_processed(gz_file: Path, csv_dir: Path) -> bool:
-    return get_csv_path(gz_file, csv_dir).exists()
+def is_processed(log_file: Path, csv_dir: Path) -> bool:
+    return get_csv_path(log_file, csv_dir).exists()
 
 
-def process_log_file(gz_file: Path, csv_dir: Path) -> int:
-    csv_path = get_csv_path(gz_file, csv_dir)
+def open_log(log_file: Path):
+    if log_file.suffix == ".gz":
+        return io.TextIOWrapper(gzip.open(log_file, "rb"), encoding="ascii")
+    return open(log_file, encoding="ascii")
+
+
+def process_log_file(log_file: Path, csv_dir: Path) -> int:
+    csv_path = get_csv_path(log_file, csv_dir)
     csv_path.parent.mkdir(parents=True, exist_ok=True)
 
     rows = []
-    with io.TextIOWrapper(gzip.open(gz_file, "rb"), encoding="ascii") as logf:
+    with open_log(log_file) as logf:
         with ApacheSource(logf, COMBINED) as src:
             for row in src:
                 if (

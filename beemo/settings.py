@@ -38,6 +38,7 @@ class LogsConfig(BaseModel):
     logs_dir: Path
     csv_dir: Path
     pattern: str = "*.gz"
+    live_pattern: str | None = None
 
 
 class AnalyticsConfig(BaseModel):

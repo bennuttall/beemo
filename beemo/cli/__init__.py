@@ -61,6 +61,7 @@ def do_logs(
     input: arguments.gz_arg = None,
     csv_dir: options.logs_csv_dir_opt = None,
     pattern: options.pattern_opt = None,
+    live_pattern: options.live_pattern_opt = None,
 ):
     """
     Process Apache log gz files into CSV.
@@ -73,8 +74,9 @@ def do_logs(
     input = require(input or (logs.logs_dir if logs else None), "logs.logs_dir")
     csv_dir = require(csv_dir or (logs.csv_dir if logs else None), "logs.csv_dir")
     pattern = pattern or (logs.pattern if logs else "*.gz")
+    live_pattern = live_pattern or (logs.live_pattern if logs else None)
 
-    run(input, csv_dir, pattern)
+    run(input, csv_dir, pattern, live_pattern)
 
 
 @app.command("analytics")
