@@ -17,7 +17,8 @@ The ``site`` instance exposes the following attributes that templates commonly u
    * - Attribute
      - Description
    * - ``site.homepage``
-     - The homepage object, or ``None`` if not in pages mode
+     - The homepage object, or ``None`` if not in pages mode or if ``pages_dir`` has no ``home``
+       directory
    * - ``site.posts``
      - All posts, sorted by ``published`` date, descending (if in posts mode)
    * - ``site.pages``
