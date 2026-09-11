@@ -2,5 +2,6 @@
 www
 dist
 .env
-poetry.lock
 docs/_build
+build
+*.egg-info
